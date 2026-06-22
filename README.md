@@ -94,6 +94,16 @@ gh release download models-v0.1.0 `
 
 Extract the archive before passing its directory to `ModelPaths.from_bundle`.
 
+The component downloader also supports private releases when `GH_TOKEN` or
+`GITHUB_TOKEN` is available:
+
+```powershell
+$env:GH_TOKEN = gh auth token
+gsxt-models `
+  --destination .\models\gsxt-models-v0.1.0 `
+  --release-base-url https://github.com/clz-nus/Gsxt-Solver/releases/download/models-v0.1.0
+```
+
 ## Scope
 
 - `src/gsxt_solver`: importable API, CLI, model manifest and downloader
