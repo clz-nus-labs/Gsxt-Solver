@@ -33,6 +33,7 @@ dev = [
 [project.scripts]
 gsxt-solve = "gsxt_solver.cli:main"
 gsxt-models = "gsxt_solver.models:main"
+gsxt-test-suite = "gsxt_solver.batch_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

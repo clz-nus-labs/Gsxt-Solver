@@ -1,6 +1,10 @@
+param(
+    [string]$EnvName = "paddlex_cv",
+    [switch]$DirectPython
+)
+
 $ErrorActionPreference = "Stop"
 
-$envName = "paddlex_cv"
 $repoDir = "Scripts\Gsxt\third_party\PaddleOCR"
 $repoUrl = "https://github.com/PaddlePaddle/PaddleOCR.git"
 $repoCommit = "9f704bc6abf7a09f22593d597f633d62668b2984"
@@ -41,13 +45,26 @@ if (-not (Test-Path $requirementsPath)) {
     exit 1
 }
 
-Write-Host "Installing PaddleOCR training requirements into $envName ..."
-conda run -n $envName python -m pip install -r $requirementsPath
+if ($DirectPython -or $env:CONDA_DEFAULT_ENV -eq $EnvName) {
+    if (-not $env:CONDA_PREFIX) {
+        throw "CONDA_PREFIX is empty. Please run: conda activate $EnvName"
+    }
+    $python = Join-Path $env:CONDA_PREFIX "python.exe"
+    if (-not (Test-Path $python)) {
+        throw "Python not found under CONDA_PREFIX: $python"
+    }
+    Write-Host "Installing PaddleOCR training requirements with: $python"
+    & $python -m pip install -r $requirementsPath
+}
+else {
+    Write-Host "Installing PaddleOCR training requirements into $EnvName ..."
+    conda run -n $EnvName python -m pip install -r $requirementsPath
+}
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "Dependency installation failed. Please check pip network access or conda env:"
-    Write-Host $envName
+    Write-Host $EnvName
     exit 1
 }
 

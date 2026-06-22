@@ -30,6 +30,38 @@ powershell -ExecutionPolicy Bypass -File .\Scripts\Gsxt\training\setup_paddleocr
 
 PaddlePaddle must be installed separately for the target CPU/GPU and CUDA environment.
 
+## Install on another Windows host
+
+The repository can remain private. The GitHub account used on the other host must be an
+owner, organization member or collaborator with access to `clz-nus/Gsxt-Solver`.
+
+```powershell
+gh auth login
+gh auth setup-git
+gh repo clone clz-nus/Gsxt-Solver
+cd Gsxt-Solver
+
+conda create -n gsxt_solver python=3.10 -y
+conda activate gsxt_solver
+
+# CPU example. For GPU, install the PaddlePaddle build matching CUDA/CUDNN instead.
+python -m pip install paddlepaddle==3.2.0 `
+  -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+python -m pip install -e ".[inference]"
+
+powershell -ExecutionPolicy Bypass `
+  -File .\Scripts\Gsxt\training\setup_paddledetection_repo.ps1 `
+  -EnvName gsxt_solver -DirectPython
+powershell -ExecutionPolicy Bypass `
+  -File .\Scripts\Gsxt\training\setup_paddleocr_repo.ps1 `
+  -EnvName gsxt_solver `
+  -DirectPython
+```
+
+The existing development machine reported a CUDNN mismatch: Paddle was compiled with
+CUDNN 9.9 while the machine provided CUDNN 9.5. A new GPU host should install a compatible
+PaddlePaddle/CUDA/CUDNN combination. CPU installation avoids that GPU compatibility issue.
+
 ## Python API
 
 ```python
@@ -104,6 +136,33 @@ gsxt-models `
   --release-base-url https://github.com/clz-nus/Gsxt-Solver/releases/download/models-v0.1.0
 ```
 
+This command downloads the individual detector, recognizer and icon-classifier assets,
+verifies every SHA-256 hash, and assembles the directory expected by `ModelPaths.from_bundle`.
+No manual weight concatenation is required.
+
+Run one bundled fixture:
+
+```powershell
+gsxt-solve .\tests\fixtures\test10.png `
+  --project-root . `
+  --model-dir .\models\gsxt-models-v0.1.0 `
+  --output-dir .\runs\test10 `
+  --cpu
+```
+
+Run all 50 fixtures:
+
+```powershell
+gsxt-test-suite `
+  --project-root . `
+  --model-dir .\models\gsxt-models-v0.1.0 `
+  --fixtures .\tests\fixtures `
+  --output-dir .\runs\test-suite `
+  --cpu
+```
+
+The combined report is written to `runs/test-suite/summary.json`.
+
 ## Scope
 
 - `src/gsxt_solver`: importable API, CLI, model manifest and downloader
@@ -111,6 +170,7 @@ gsxt-models `
 - `Scripts/Gsxt/training`: current detector, recognizer and icon-classifier training entry points
 - `Scripts/Gsxt/tools`: dataset conversion and semantic lexicon tools used by the current workflow
 - `Scripts/Gsxt/synthetic/generate_mixed_scene.py`: synthetic training data generator
+- `tests/fixtures`: the 50 development evaluation images
 
 The model weights are distributed separately because their training-data provenance and
 usage terms must be reviewed independently from the Apache-2.0 source-code license.
