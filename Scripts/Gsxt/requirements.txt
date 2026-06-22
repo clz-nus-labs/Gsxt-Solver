@@ -1,0 +1,6 @@
+paddleocr
+opencv-python
+numpy
+Pillow
+PyYAML
+tqdm

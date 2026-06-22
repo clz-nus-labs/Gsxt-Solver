@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Environments and IDEs
+.venv/
+.venv-1/
+.idea/
+.vscode/
+
+# Generated outputs and datasets
+output/
+output_inference/
+/Scripts/*
+Scripts/Gsxt/output/
+Scripts/Gsxt/data/images/
+Scripts/Gsxt/data/datasets/
+Scripts/Gsxt/synthetic/output*/
+Scripts/Gsxt/synthetic/_smoke_output*/
+
+# Third-party source checkouts are installed separately or as submodules.
+Scripts/Gsxt/third_party/
+Scripts/GJQYXYGS/
+
+# Model weights and optimizer/checkpoint state
+*.pdparams
+*.pdopt
+*.pdema
+*.pdstates
+*.states
+*.onnx
+*.pdmodel
+*.pdiparams
+
+# Logs and temporary files
+*.log
+*.part
+~

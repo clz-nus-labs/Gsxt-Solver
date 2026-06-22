@@ -1,0 +1,30 @@
+{
+  "version": "0.1.0",
+  "assets": [
+    {
+      "path": "det/best_model.pdparams",
+      "release_name": "det-best_model.pdparams",
+      "sha256": "d820d57fd450a592a4c798b449c7bb2acbfbed626356fae7d31fcae8063165c3"
+    },
+    {
+      "path": "rec/best_accuracy.pdparams",
+      "release_name": "rec-best_accuracy.pdparams",
+      "sha256": "cdade2fa0332b34e07288d47c97dce6bcbc2b2709b9cb5f09c15dcc56d55754a"
+    },
+    {
+      "path": "rec/config.yml",
+      "release_name": "rec-config.yml",
+      "sha256": "150647c92798b07578f95c6c5cf0487208b4b20259953233e318103ad7c65244"
+    },
+    {
+      "path": "icon/best_accuracy.pdparams",
+      "release_name": "icon-best_accuracy.pdparams",
+      "sha256": "641281c32ff3c0d921ab407c8f9556ceef5cedbe1df2e9face5bf02b961e121e"
+    },
+    {
+      "path": "icon/label_list.txt",
+      "release_name": "icon-label_list.txt",
+      "sha256": "a6f204b2e12aa66e6e01b86cca6aa0b15041c49547b3c963489f850a1c3acff1"
+    }
+  ]
+}

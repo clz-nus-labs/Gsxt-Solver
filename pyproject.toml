@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gsxt-solver"
+version = "0.1.0"
+description = "Structured image-order inference pipeline for Chinese characters and icons."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "GSXT Solver contributors" }]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: Microsoft :: Windows",
+]
+dependencies = []
+
+[project.optional-dependencies]
+inference = [
+  "numpy",
+  "opencv-python",
+  "Pillow",
+  "PyYAML",
+  "tqdm",
+]
+dev = [
+  "build",
+  "pytest",
+]
+
+[project.scripts]
+gsxt-solve = "gsxt_solver.cli:main"
+gsxt-models = "gsxt_solver.models:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+gsxt_solver = ["assets/*.json"]
