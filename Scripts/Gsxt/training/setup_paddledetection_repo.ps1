@@ -8,6 +8,15 @@ $repoDir = "Scripts\Gsxt\third_party\PaddleDetection"
 $repoUrl = "https://github.com/PaddlePaddle/PaddleDetection.git"
 $repoCommit = "b25522a0f4bde8c80603f3ba5e3472059972e3b5"
 
+if (
+  $DirectPython -and (
+    -not $env:CONDA_PREFIX -or
+    $env:CONDA_DEFAULT_ENV -ne $EnvName
+  )
+) {
+  throw "Direct Python requires the activated conda env: $EnvName"
+}
+
 if (-not (Test-Path $repoDir)) {
   Write-Host "Cloning PaddleDetection into $repoDir ..."
   git clone --no-checkout $repoUrl $repoDir
@@ -30,9 +39,6 @@ if (-not (Test-Path $requirements)) {
 }
 
 if ($DirectPython -or $env:CONDA_DEFAULT_ENV -eq $EnvName) {
-  if (-not $env:CONDA_PREFIX) {
-    throw "CONDA_PREFIX is empty. Please run: conda activate $EnvName"
-  }
   $python = Join-Path $env:CONDA_PREFIX "python.exe"
   if (-not (Test-Path $python)) {
     throw "Python not found under CONDA_PREFIX: $python"

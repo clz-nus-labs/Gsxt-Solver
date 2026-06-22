@@ -10,6 +10,15 @@ $repoUrl = "https://github.com/PaddlePaddle/PaddleOCR.git"
 $repoCommit = "9f704bc6abf7a09f22593d597f633d62668b2984"
 $requirementsPath = Join-Path $repoDir "requirements.txt"
 
+if (
+    $DirectPython -and (
+        -not $env:CONDA_PREFIX -or
+        $env:CONDA_DEFAULT_ENV -ne $EnvName
+    )
+) {
+    throw "Direct Python requires the activated conda env: $EnvName"
+}
+
 if (-not (Test-Path "Scripts\Gsxt\third_party")) {
     New-Item -ItemType Directory -Path "Scripts\Gsxt\third_party" | Out-Null
 }
@@ -46,9 +55,6 @@ if (-not (Test-Path $requirementsPath)) {
 }
 
 if ($DirectPython -or $env:CONDA_DEFAULT_ENV -eq $EnvName) {
-    if (-not $env:CONDA_PREFIX) {
-        throw "CONDA_PREFIX is empty. Please run: conda activate $EnvName"
-    }
     $python = Join-Path $env:CONDA_PREFIX "python.exe"
     if (-not (Test-Path $python)) {
         throw "Python not found under CONDA_PREFIX: $python"

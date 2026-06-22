@@ -66,6 +66,9 @@ python -m pip install -e ".[inference]"
 For GPU inference, replace the CPU PaddlePaddle package with the build matching the
 host's CUDA/CUDNN environment.
 
+The inference extra installs `numpy<2` and `opencv-python<=4.6.0`, which are required by
+the pinned PaddleDetection/imgaug runtime.
+
 ### 3. Install runtime source dependencies
 
 ```powershell
