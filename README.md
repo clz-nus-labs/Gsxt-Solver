@@ -80,14 +80,10 @@ powershell -ExecutionPolicy Bypass `
   -DirectPython
 ```
 
-<<<<<<< HEAD
 ## Download and assemble the models
 
 The model release contains the detector, character recognizer, icon classifier,
 recognition configuration, and icon label list.
-=======
-## Python API
->>>>>>> origin/main
 
 For the private repository:
 
