@@ -2,7 +2,7 @@
 
 `gsxt-solver` packages the latest trained character/icon ordering pipeline behind a stable Python API and CLI.
 
-> Use only on images and systems you own or are authorized to test.
+
 
 The repository intentionally contains only the current inference implementation and the
 training utilities needed to reproduce it. Model weights, datasets, browser profiles,
