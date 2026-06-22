@@ -51,10 +51,6 @@ powershell -ExecutionPolicy Bypass `
   -DirectPython
 ```
 
-The existing development machine reported a CUDNN mismatch: Paddle was compiled with
-CUDNN 9.9 while the machine provided CUDNN 9.5. A new GPU host should install a compatible
-PaddlePaddle/CUDA/CUDNN combination. CPU installation avoids that GPU compatibility issue.
-
 ## Python API
 
 ```python
