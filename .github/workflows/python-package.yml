@@ -18,3 +18,6 @@ jobs:
       - run: python -c "from gsxt_solver import ModelPaths, Solver; from gsxt_solver.batch_cli import test_number; print('import ok')"
         env:
           PYTHONPATH: src
+      - run: python -m unittest discover -s tests -p "test_*.py" -v
+        env:
+          PYTHONPATH: src

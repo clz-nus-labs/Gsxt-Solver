@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from .config import ModelPaths
+from .result import format_error_result, format_standard_result
 
 
 class SolverError(RuntimeError):
@@ -53,6 +55,25 @@ class Solver:
             use_gpu=use_gpu,
         )
 
+    @classmethod
+    def from_bundle(
+        cls,
+        project_root: str | Path,
+        model_dir: str | Path,
+        *,
+        python_executable: str | Path | None = None,
+        use_gpu: bool = True,
+    ) -> "Solver":
+        """Create a solver from a model directory assembled by ``gsxt-models``."""
+
+        root = Path(project_root).resolve()
+        return cls(
+            project_root=root,
+            models=ModelPaths.from_bundle(model_dir, project_root=root),
+            python_executable=python_executable,
+            use_gpu=use_gpu,
+        )
+
     def validate(self) -> None:
         if not self.backend.exists():
             raise FileNotFoundError(f"Inference backend not found: {self.backend}")
@@ -68,7 +89,7 @@ class Solver:
                 raise FileNotFoundError(f"Required source dependency not found: {path}")
         self.models.validate()
 
-    def solve(
+    def _run_backend(
         self,
         image: str | Path,
         *,
@@ -76,7 +97,7 @@ class Solver:
         threshold: float = 0.3,
         target_order: str = "",
         timeout: int = 300,
-    ) -> dict[str, Any]:
+    ) -> tuple[dict[str, Any], Path, Path]:
         self.validate()
         image_path = Path(image).resolve()
         if not image_path.exists():
@@ -150,4 +171,96 @@ class Solver:
         }
         if output_dir is None:
             result["runtime"]["temporary_output"] = True
+        return result, image_path, result_path
+
+    def predict(
+        self,
+        image: str | Path,
+        *,
+        output_dir: str | Path | None = None,
+        threshold: float = 0.3,
+        target_order: str = "",
+        timeout: int = 300,
+    ) -> dict[str, Any]:
+        """Run inference and return the stable, probability-free public result."""
+
+        try:
+            with tempfile.TemporaryDirectory(prefix="gsxt-solver-standard-") as work_dir:
+                debug_result, image_path, _ = self._run_backend(
+                    image,
+                    output_dir=work_dir,
+                    threshold=threshold,
+                    target_order=target_order,
+                    timeout=timeout,
+                )
+                result = format_standard_result(debug_result, image=image_path)
+
+                if output_dir is not None:
+                    public_dir = Path(output_dir).resolve()
+                    public_dir.mkdir(parents=True, exist_ok=True)
+                    (public_dir / "result.json").write_text(
+                        json.dumps(result, ensure_ascii=False, indent=2),
+                        encoding="utf-8",
+                    )
+                    source_visual = Path(work_dir) / "visual" / image_path.name
+                    if source_visual.exists():
+                        visual_dir = public_dir / "visual"
+                        visual_dir.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(source_visual, visual_dir / image_path.name)
+        except Exception as error:
+            result = format_error_result(image=image, error=error)
+            if output_dir is not None:
+                public_dir = Path(output_dir).resolve()
+                public_dir.mkdir(parents=True, exist_ok=True)
+                (public_dir / "result.json").write_text(
+                    json.dumps(result, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
         return result
+
+    def debug(
+        self,
+        image: str | Path,
+        *,
+        output_dir: str | Path | None = None,
+        threshold: float = 0.3,
+        target_order: str = "",
+        timeout: int = 300,
+    ) -> dict[str, Any]:
+        """Run inference and return the full diagnostic backend payload."""
+
+        result, _, result_path = self._run_backend(
+            image,
+            output_dir=output_dir,
+            threshold=threshold,
+            target_order=target_order,
+            timeout=timeout,
+        )
+        result_path.write_text(
+            json.dumps(result, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        return result
+
+    def solve(
+        self,
+        image: str | Path,
+        *,
+        mode: Literal["standard", "debug"] = "standard",
+        output_dir: str | Path | None = None,
+        threshold: float = 0.3,
+        target_order: str = "",
+        timeout: int = 300,
+    ) -> dict[str, Any]:
+        """Run in standard mode by default, or return diagnostics with mode='debug'."""
+
+        if mode not in {"standard", "debug"}:
+            raise ValueError("mode must be 'standard' or 'debug'")
+        method = self.predict if mode == "standard" else self.debug
+        return method(
+            image,
+            output_dir=output_dir,
+            threshold=threshold,
+            target_order=target_order,
+            timeout=timeout,
+        )

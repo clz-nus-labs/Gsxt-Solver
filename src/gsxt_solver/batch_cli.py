@@ -4,31 +4,14 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import Any
 
-from .config import ModelPaths
+from .result import format_error_result
 from .solver import Solver
 
 
 def test_number(path: Path) -> int:
     match = re.fullmatch(r"test(\d+)", path.stem, flags=re.IGNORECASE)
     return int(match.group(1)) if match else 10**9
-
-
-def compact_result(image: Path, result: dict[str, Any]) -> dict[str, Any]:
-    task_spec = result.get("task_spec") or {}
-    return {
-        "image": image.name,
-        "status": "ok",
-        "task_type": result.get("task_type") or task_spec.get("modality"),
-        "target_order": (
-            result.get("resolved_target_order")
-            or task_spec.get("target_order")
-            or ""
-        ),
-        "item_count": len(result.get("items") or []),
-        "output_dir": result.get("runtime", {}).get("output_dir"),
-    }
 
 
 def main() -> None:
@@ -51,37 +34,30 @@ def main() -> None:
     if not images:
         raise FileNotFoundError(f"No test*.png fixtures found under: {fixtures}")
 
-    models = ModelPaths.from_bundle(args.model_dir, project_root=project_root)
-    solver = Solver.from_project(
+    solver = Solver.from_bundle(
         project_root,
-        models=models,
+        args.model_dir,
         python_executable=args.python_executable,
         use_gpu=not args.cpu,
     )
 
-    summaries: list[dict[str, Any]] = []
+    summaries: list[dict] = []
     for index, image in enumerate(images, start=1):
         print(f"[{index:02d}/{len(images):02d}] {image.name}", flush=True)
         try:
-            result = solver.solve(
+            result = solver.predict(
                 image,
                 output_dir=output_root / image.stem,
                 threshold=args.threshold,
             )
-            summaries.append(compact_result(image, result))
+            summaries.append(result)
         except Exception as exc:
-            summaries.append(
-                {
-                    "image": image.name,
-                    "status": "error",
-                    "error": str(exc),
-                }
-            )
+            summaries.append(format_error_result(image=image, error=exc))
 
     payload = {
         "fixture_count": len(images),
-        "success_count": sum(row["status"] == "ok" for row in summaries),
-        "failure_count": sum(row["status"] == "error" for row in summaries),
+        "success_count": sum(row.get("success") is True for row in summaries),
+        "failure_count": sum(row.get("success") is not True for row in summaries),
         "results": summaries,
     }
     summary_path = output_root / "summary.json"
