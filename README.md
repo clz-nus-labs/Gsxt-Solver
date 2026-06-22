@@ -1,146 +1,114 @@
 # GSXT Solver
 
-`gsxt-solver` packages the latest trained character/icon ordering pipeline behind a stable Python API and CLI.
+GSXT Solver is a PaddlePaddle-based image understanding pipeline for structured
+character and icon ordering tasks. It detects candidate regions, recognizes Chinese
+characters or icons, interprets the instruction area, and returns the targets in the
+requested order.
 
+The package provides:
 
+- automatic task-type inference for character and icon tasks;
+- character recognition with semantic lexicon decoding;
+- icon classification and prompt-to-body matching;
+- a Python API and command-line interface;
+- automatic model download, verification, and directory assembly;
+- 50 bundled evaluation images for regression testing.
 
-The repository intentionally contains only the current inference implementation and the
-training utilities needed to reproduce it. Model weights, datasets, browser profiles,
-generated images, historical experiments, and the unrelated `GJQYXYGS` automation project
-are not stored in Git.
+## Supported use cases
 
-## Install from a checkout
+GSXT Solver is designed for images containing:
 
-```powershell
-python -m pip install -e .
-```
+- a text instruction or visual prompt near the top of the image;
+- Chinese-character or icon candidates in the main image area;
+- an explicit target order or a semantic ordering instruction.
 
-Install PaddlePaddle separately for the target CPU/GPU environment, then install the optional runtime dependencies:
+It is a domain-specific pipeline rather than a general-purpose OCR or object-detection
+library. Performance is best on layouts and visual styles similar to the supplied
+evaluation images.
 
-```powershell
-python -m pip install -e ".[inference]"
-```
+## Requirements
 
-The current backend requires pinned PaddleDetection and PaddleOCR source trees:
+- Windows
+- Python 3.10
+- PaddlePaddle 3.2
+- Git
+- GitHub CLI (`gh`) when accessing the private repository and model release
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\Scripts\Gsxt\training\setup_paddledetection_repo.ps1
-powershell -ExecutionPolicy Bypass -File .\Scripts\Gsxt\training\setup_paddleocr_repo.ps1
-```
+For GPU inference, install a PaddlePaddle build compatible with the host's CUDA and
+CUDNN versions.
 
-PaddlePaddle must be installed separately for the target CPU/GPU and CUDA environment.
+## Installation
 
-## Install on another Windows host
+### 1. Clone the repository
 
-The repository can remain private. The GitHub account used on the other host must be an
-owner, organization member or collaborator with access to `clz-nus/Gsxt-Solver`.
+For the current private repository, first authenticate an account with access:
 
 ```powershell
 gh auth login
 gh auth setup-git
 gh repo clone clz-nus/Gsxt-Solver
 cd Gsxt-Solver
+```
 
+### 2. Create an environment
+
+CPU example:
+
+```powershell
 conda create -n gsxt_solver python=3.10 -y
 conda activate gsxt_solver
 
-# CPU example. For GPU, install the PaddlePaddle build matching CUDA/CUDNN instead.
 python -m pip install paddlepaddle==3.2.0 `
   -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
 python -m pip install -e ".[inference]"
+```
 
+For GPU inference, replace the CPU PaddlePaddle package with the build matching the
+host's CUDA/CUDNN environment.
+
+### 3. Install runtime source dependencies
+
+```powershell
 powershell -ExecutionPolicy Bypass `
   -File .\Scripts\Gsxt\training\setup_paddledetection_repo.ps1 `
-  -EnvName gsxt_solver -DirectPython
+  -EnvName gsxt_solver `
+  -DirectPython
+
 powershell -ExecutionPolicy Bypass `
   -File .\Scripts\Gsxt\training\setup_paddleocr_repo.ps1 `
   -EnvName gsxt_solver `
   -DirectPython
 ```
 
-The existing development machine reported a CUDNN mismatch: Paddle was compiled with
-CUDNN 9.9 while the machine provided CUDNN 9.5. A new GPU host should install a compatible
-PaddlePaddle/CUDA/CUDNN combination. CPU installation avoids that GPU compatibility issue.
+## Download and assemble the models
 
-## Python API
+The model release contains the detector, character recognizer, icon classifier,
+recognition configuration, and icon label list.
 
-```python
-from gsxt_solver import Solver
-
-solver = Solver.from_project(
-    project_root=r"D:\path\to\repository",
-    python_executable=r"C:\path\to\paddlex_cv\python.exe",
-)
-
-result = solver.solve("example.png")
-print(result["task_spec"])
-print(result["items"])
-```
-
-You can point to a downloaded model bundle:
-
-```python
-from gsxt_solver import ModelPaths, Solver
-
-solver = Solver.from_project(
-    project_root=r"D:\path\to\repository",
-    models=ModelPaths.from_bundle(
-        r"D:\models\gsxt-models-v0.1.0",
-        project_root=r"D:\path\to\repository",
-    ),
-)
-```
-
-## CLI
-
-```powershell
-gsxt-solve .\example.png --project-root . --output-dir .\runs\example
-```
-
-With a downloaded model bundle:
-
-```powershell
-gsxt-solve .\example.png `
-  --project-root D:\path\to\repository `
-  --model-dir D:\models\gsxt-models-v0.1.0
-```
-
-## Model distribution
-
-Model weights are intentionally excluded from Git. Build the release bundle:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\build_model_bundle.ps1
-```
-
-Upload the generated archive under `dist/models/` to a GitHub Release. The bundle includes SHA-256 metadata.
-
-For this private repository, an authenticated user can download a release with:
-
-```powershell
-gh release download models-v0.1.0 `
-  --repo clz-nus/Gsxt-Solver `
-  --pattern "gsxt-models-v0.1.0.zip" `
-  --dir .\models
-```
-
-Extract the archive before passing its directory to `ModelPaths.from_bundle`.
-
-The component downloader also supports private releases when `GH_TOKEN` or
-`GITHUB_TOKEN` is available:
+For the private repository:
 
 ```powershell
 $env:GH_TOKEN = gh auth token
+
 gsxt-models `
   --destination .\models\gsxt-models-v0.1.0 `
   --release-base-url https://github.com/clz-nus/Gsxt-Solver/releases/download/models-v0.1.0
 ```
 
-This command downloads the individual detector, recognizer and icon-classifier assets,
-verifies every SHA-256 hash, and assembles the directory expected by `ModelPaths.from_bundle`.
+`gsxt-models` automatically:
+
+1. downloads every required model component;
+2. verifies each file using SHA-256;
+3. creates the detector, recognizer, and icon-classifier directories;
+4. generates the minimal detector metadata required at runtime.
+
 No manual weight concatenation is required.
 
-Run one bundled fixture:
+If the repository is made public later, the same command works without `GH_TOKEN`.
+
+## Command-line usage
+
+Run one image:
 
 ```powershell
 gsxt-solve .\tests\fixtures\test10.png `
@@ -150,7 +118,68 @@ gsxt-solve .\tests\fixtures\test10.png `
   --cpu
 ```
 
-Run all 50 fixtures:
+Remove `--cpu` to use the configured GPU environment.
+
+The output directory contains:
+
+- `result.json`: task interpretation, detected candidates, resolved order, and final items;
+- `visual/<image-name>`: visualization of the final selected items.
+
+You can provide a known order manually:
+
+```powershell
+gsxt-solve .\example.png `
+  --project-root . `
+  --model-dir .\models\gsxt-models-v0.1.0 `
+  --target-order "古,罗,马" `
+  --output-dir .\runs\manual-order
+```
+
+## Python API
+
+```python
+from pathlib import Path
+
+from gsxt_solver import ModelPaths, Solver
+
+project_root = Path(r"D:\path\to\Gsxt-Solver")
+model_dir = project_root / "models" / "gsxt-models-v0.1.0"
+
+models = ModelPaths.from_bundle(
+    model_dir,
+    project_root=project_root,
+)
+
+solver = Solver.from_project(
+    project_root,
+    models=models,
+    use_gpu=False,
+)
+
+result = solver.solve(
+    project_root / "tests" / "fixtures" / "test10.png",
+    output_dir=project_root / "runs" / "api-test10",
+)
+
+print(result["task_spec"])
+print(result["merge_settings"]["resolved_target_order"])
+
+for item in result["items"]:
+    print(item["center"], item.get("text") or item.get("label"))
+```
+
+Important result fields:
+
+| Field | Description |
+| --- | --- |
+| `task_type` | Resolved modality: `char`, `icon`, or `mixed` |
+| `task_spec` | Interpreted action, target source, confidence, and evidence |
+| `merge_settings.resolved_target_order` | Final target sequence used by the solver |
+| `raw_items` | Candidates before overlap merging |
+| `merged_items` | Candidates after overlap and duplicate handling |
+| `items` | Final ordered output |
+
+## Run the 50-image evaluation set
 
 ```powershell
 gsxt-test-suite `
@@ -161,20 +190,26 @@ gsxt-test-suite `
   --cpu
 ```
 
-The combined report is written to `runs/test-suite/summary.json`.
+The command creates one result directory per image and writes the combined report to:
 
-## Scope
+```text
+runs/test-suite/summary.json
+```
 
-- `src/gsxt_solver`: importable API, CLI, model manifest and downloader
-- `Scripts/Gsxt/demos/dynamic_mixed_infer.py`: current inference backend
-- `Scripts/Gsxt/training`: current detector, recognizer and icon-classifier training entry points
-- `Scripts/Gsxt/tools`: dataset conversion and semantic lexicon tools used by the current workflow
-- `Scripts/Gsxt/synthetic/generate_mixed_scene.py`: synthetic training data generator
-- `tests/fixtures`: the 50 development evaluation images
+## Current limitations
 
-The model weights are distributed separately because their training-data provenance and
-usage terms must be reviewed independently from the Apache-2.0 source-code license.
+- Visually similar characters and icons may produce ambiguous top candidates.
+- Unusual prompt layouts can affect task-type and target-order inference.
+- Small, overlapping, or heavily distorted regions can cause missed or duplicate detections.
+- Semantic ordering quality depends on recognition candidates and lexicon coverage.
+- The 50 bundled images are regression inputs; authoritative ground-truth annotations are
+  not yet included.
 
-## Repository publishing
+See [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) for the planned evaluation, training, and
+decoding improvements.
 
-See [GITHUB_RELEASE.md](GITHUB_RELEASE.md) for the recommended GitHub and release workflow.
+## License
+
+Source code is licensed under Apache License 2.0. Model and third-party information is
+documented in [MODEL_CARD.md](MODEL_CARD.md) and
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
