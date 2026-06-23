@@ -9,7 +9,7 @@ The package provides:
 
 - automatic task-type inference for character and icon tasks;
 - character recognition with semantic lexicon decoding;
-- icon classification and prompt-to-body matching;
+- icon classification plus prompt-to-body shape and embedding matching;
 - a Python API and command-line interface;
 - automatic model download, verification, and directory assembly;
 - 50 bundled evaluation images for regression testing.
