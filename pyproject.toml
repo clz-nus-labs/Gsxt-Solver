@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gsxt-solver"
-version = "0.2.0"
+version = "0.2.1"
 description = "Structured image-order inference pipeline for Chinese characters and icons."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -19,8 +19,8 @@ dependencies = []
 
 [project.optional-dependencies]
 inference = [
-  "numpy",
-  "opencv-python",
+  "numpy<2",
+  "opencv-python<=4.6.0",
   "Pillow",
   "PyYAML",
   "tqdm",

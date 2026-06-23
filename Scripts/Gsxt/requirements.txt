@@ -1,6 +1,6 @@
 paddleocr
-opencv-python
-numpy
+opencv-python<=4.6.0
+numpy<2
 Pillow
 PyYAML
 tqdm

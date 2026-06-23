@@ -828,6 +828,8 @@ def run_paddledet(
         str(threshold),
         "--save_results",
         "True",
+        "--visualize",
+        "False",
         "-o",
         f"weights={as_posix(weights)}",
         f"use_gpu={'true' if use_gpu else 'false'}",
