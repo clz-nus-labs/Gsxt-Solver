@@ -173,11 +173,52 @@ class Solver:
             result["runtime"]["temporary_output"] = True
         return result, image_path, result_path
 
+    def _resolve_output_dir(
+        self,
+        image: str | Path,
+        *,
+        mode: Literal["standard", "debug"],
+        output_dir: str | Path | None,
+    ) -> Path:
+        if output_dir is not None:
+            return Path(output_dir).resolve()
+        image_path = Path(image)
+        suffix = "-debug" if mode == "debug" else ""
+        return self.project_root / "runs" / f"{image_path.stem}{suffix}"
+
+    @staticmethod
+    def _save_outputs(
+        result: dict[str, Any],
+        *,
+        image_path: Path,
+        work_dir: str | Path,
+        output_dir: Path,
+        save_result: bool,
+        save_visual: bool,
+    ) -> None:
+        if not save_result and not save_visual:
+            return
+
+        output_dir.mkdir(parents=True, exist_ok=True)
+        if save_result:
+            (output_dir / "result.json").write_text(
+                json.dumps(result, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        if save_visual:
+            source_visual = Path(work_dir) / "visual" / image_path.name
+            if source_visual.exists():
+                visual_dir = output_dir / "visual"
+                visual_dir.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source_visual, visual_dir / image_path.name)
+
     def predict(
         self,
         image: str | Path,
         *,
         output_dir: str | Path | None = None,
+        save_result: bool = False,
+        save_visual: bool = False,
         threshold: float = 0.3,
         target_order: str = "",
         timeout: int = 300,
@@ -195,22 +236,27 @@ class Solver:
                 )
                 result = format_standard_result(debug_result, image=image_path)
 
-                if output_dir is not None:
-                    public_dir = Path(output_dir).resolve()
-                    public_dir.mkdir(parents=True, exist_ok=True)
-                    (public_dir / "result.json").write_text(
-                        json.dumps(result, ensure_ascii=False, indent=2),
-                        encoding="utf-8",
+                if save_result or save_visual:
+                    self._save_outputs(
+                        result,
+                        image_path=image_path,
+                        work_dir=work_dir,
+                        output_dir=self._resolve_output_dir(
+                            image_path,
+                            mode="standard",
+                            output_dir=output_dir,
+                        ),
+                        save_result=save_result,
+                        save_visual=save_visual,
                     )
-                    source_visual = Path(work_dir) / "visual" / image_path.name
-                    if source_visual.exists():
-                        visual_dir = public_dir / "visual"
-                        visual_dir.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(source_visual, visual_dir / image_path.name)
         except Exception as error:
             result = format_error_result(image=image, error=error)
-            if output_dir is not None:
-                public_dir = Path(output_dir).resolve()
+            if save_result:
+                public_dir = self._resolve_output_dir(
+                    image,
+                    mode="standard",
+                    output_dir=output_dir,
+                )
                 public_dir.mkdir(parents=True, exist_ok=True)
                 (public_dir / "result.json").write_text(
                     json.dumps(result, ensure_ascii=False, indent=2),
@@ -223,23 +269,41 @@ class Solver:
         image: str | Path,
         *,
         output_dir: str | Path | None = None,
+        save_result: bool = True,
+        save_visual: bool = True,
         threshold: float = 0.3,
         target_order: str = "",
         timeout: int = 300,
     ) -> dict[str, Any]:
         """Run inference and return the full diagnostic backend payload."""
 
-        result, _, result_path = self._run_backend(
-            image,
-            output_dir=output_dir,
-            threshold=threshold,
-            target_order=target_order,
-            timeout=timeout,
-        )
-        result_path.write_text(
-            json.dumps(result, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        with tempfile.TemporaryDirectory(prefix="gsxt-solver-debug-") as work_dir:
+            result, image_path, _ = self._run_backend(
+                image,
+                output_dir=work_dir,
+                threshold=threshold,
+                target_order=target_order,
+                timeout=timeout,
+            )
+            if save_result or save_visual:
+                public_dir = self._resolve_output_dir(
+                    image_path,
+                    mode="debug",
+                    output_dir=output_dir,
+                )
+                result["runtime"]["output_dir"] = str(public_dir)
+                result["runtime"].pop("temporary_output", None)
+                self._save_outputs(
+                    result,
+                    image_path=image_path,
+                    work_dir=work_dir,
+                    output_dir=public_dir,
+                    save_result=save_result,
+                    save_visual=save_visual,
+                )
+            else:
+                result["runtime"]["output_dir"] = None
+                result["runtime"]["temporary_output"] = True
         return result
 
     def solve(
@@ -248,6 +312,8 @@ class Solver:
         *,
         mode: Literal["standard", "debug"] = "standard",
         output_dir: str | Path | None = None,
+        save_result: bool | None = None,
+        save_visual: bool | None = None,
         threshold: float = 0.3,
         target_order: str = "",
         timeout: int = 300,
@@ -257,9 +323,12 @@ class Solver:
         if mode not in {"standard", "debug"}:
             raise ValueError("mode must be 'standard' or 'debug'")
         method = self.predict if mode == "standard" else self.debug
+        default_save = mode == "debug"
         return method(
             image,
             output_dir=output_dir,
+            save_result=default_save if save_result is None else save_result,
+            save_visual=default_save if save_visual is None else save_visual,
             threshold=threshold,
             target_order=target_order,
             timeout=timeout,
