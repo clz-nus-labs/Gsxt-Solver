@@ -68,6 +68,8 @@ host's CUDA/CUDNN environment.
 
 The inference extra installs `numpy<2` and `opencv-python<=4.6.0`, which are required by
 the pinned PaddleDetection/imgaug runtime.
+The source dependency setup scripts also apply `Scripts/Gsxt/runtime-constraints.txt`
+so PaddleOCR cannot replace the compatible NumPy/OpenCV runtime with NumPy 2.x wheels.
 
 ### 3. Install runtime source dependencies
 
