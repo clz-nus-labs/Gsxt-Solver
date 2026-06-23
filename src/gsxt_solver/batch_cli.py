@@ -48,6 +48,8 @@ def main() -> None:
             result = solver.predict(
                 image,
                 output_dir=output_root / image.stem,
+                save_result=True,
+                save_visual=True,
                 threshold=args.threshold,
             )
             summaries.append(result)

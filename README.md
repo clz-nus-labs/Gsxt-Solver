@@ -124,7 +124,6 @@ The CLI has two output modes:
 gsxt-solve .\tests\fixtures\test10.png `
   --project-root . `
   --model-dir .\models\gsxt-models-v0.1.0 `
-  --output-dir .\runs\test10 `
   --mode standard `
   --cpu
 ```
@@ -161,8 +160,10 @@ Example output:
 }
 ```
 
-Standard mode does not expose model probabilities or intermediate candidates. The
-`result.json` written to the output directory uses the same schema.
+Standard mode does not expose model probabilities or intermediate candidates and does
+not save files by default. Add `--save-result`, `--save-visual`, and optionally
+`--output-dir .\runs\test10` when files are required. If `--output-dir` is omitted
+while saving is enabled, files are written under `runs/<image-name>`.
 If inference fails, standard mode returns `success: false` with a short `error` object
 instead of exposing backend logs or a diagnostic traceback.
 
@@ -179,11 +180,12 @@ gsxt-solve .\tests\fixtures\test10.png `
 
 Debug mode returns the complete backend payload, including task evidence, raw and merged
 candidates, detection/OCR/classification scores, alternative candidates, suppression
-details, and runtime logs.
+details, and runtime logs. It saves `result.json` and the annotated image by default.
+Use `--no-save-result` or `--no-save-visual` to disable either file.
 
 Remove `--cpu` to use the configured GPU environment.
 
-The output directory contains:
+When saving is enabled, the output directory contains:
 
 - `result.json`: standard or debug JSON according to the selected mode;
 - `visual/<image-name>`: visualization of the final selected items.
@@ -196,7 +198,9 @@ gsxt-solve .\example.png `
   --model-dir .\models\gsxt-models-v0.1.0 `
   --target-order "古,罗,马" `
   --mode standard `
-  --output-dir .\runs\manual-order
+  --output-dir .\runs\manual-order `
+  --save-result `
+  --save-visual
 ```
 
 ## Python API
@@ -218,7 +222,6 @@ solver = Solver.from_bundle(
 # Standard mode: stable, probability-free output.
 result = solver.predict(
     project_root / "tests" / "fixtures" / "test10.png",
-    output_dir=project_root / "runs" / "api-test10",
 )
 
 print(result["task"])
@@ -227,6 +230,28 @@ print(result["result"]["points"])
 
 for item in result["result"]["items"]:
     print(item["center"], item["value"])
+```
+
+Standard mode only returns the result by default. Enable optional files explicitly:
+
+```python
+result = solver.predict(
+    project_root / "tests" / "fixtures" / "test10.png",
+    output_dir=project_root / "runs" / "api-test10",
+    save_result=True,
+    save_visual=True,
+)
+```
+
+`output_dir` is optional. When omitted with saving enabled, the default directory is
+`runs/<image-name>`:
+
+```python
+result = solver.predict(
+    project_root / "tests" / "fixtures" / "test10.png",
+    save_result=True,
+    save_visual=True,
+)
 ```
 
 Debug mode uses the same solver instance:
@@ -240,6 +265,16 @@ debug_result = solver.debug(
 print(debug_result["task_spec"])
 print(debug_result["raw_items"])
 print(debug_result["merged_items"])
+```
+
+Debug mode saves both files by default. It can also run without writing anything:
+
+```python
+debug_result = solver.debug(
+    project_root / "tests" / "fixtures" / "test10.png",
+    save_result=False,
+    save_visual=False,
+)
 ```
 
 `solve()` is also available as an explicit mode dispatcher:
