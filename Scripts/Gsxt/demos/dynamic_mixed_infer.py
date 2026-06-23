@@ -1034,6 +1034,51 @@ def classify_icon(model, labels: list[str], crop_rgb: Image.Image) -> tuple[str,
     return label, score
 
 
+@paddle.no_grad()
+def extract_icon_embeddings(model, crops_rgb: list[Image.Image]) -> np.ndarray:
+    """Return normalized penultimate visual features for open-set matching."""
+    batch = np.stack([preprocess_icon(crop) for crop in crops_rgb], axis=0)
+    tensor = paddle.to_tensor(batch)
+    if all(hasattr(model, name) for name in ("conv", "blocks", "lastconv", "avgpool")):
+        features = model.conv(tensor)
+        features = model.blocks(features)
+        features = model.lastconv(features)
+        features = model.avgpool(features)
+        features = paddle.flatten(features, start_axis=1)
+    else:
+        features = model(tensor)
+    vectors = features.numpy().astype(np.float32)
+    norms = np.linalg.norm(vectors, axis=1, keepdims=True)
+    return vectors / np.maximum(norms, 1e-8)
+
+
+def extract_icon_embedding(model, crop_rgb: Image.Image) -> np.ndarray:
+    return extract_icon_embeddings(model, [crop_rgb])[0]
+
+
+def icon_embedding_for_box(
+    model,
+    image_rgb: Image.Image,
+    box: list[int],
+    *,
+    header: bool,
+) -> np.ndarray:
+    """Average original and silhouette views to reduce color/background bias."""
+    x1, y1, x2, y2 = box
+    crop = image_rgb.crop((x1, y1, x2, y2)).convert("RGB")
+    mask = icon_shape_mask(image_rgb, box, header=header)
+    variants = [crop]
+    binary = mask > 0.25
+    if binary.any():
+        for color in ((255, 255, 255), (0, 255, 255)):
+            canvas = np.zeros((*mask.shape, 3), dtype=np.uint8)
+            canvas[binary] = color
+            variants.append(Image.fromarray(canvas, mode="RGB"))
+    embeddings = extract_icon_embeddings(model, variants)
+    vector = np.mean(embeddings, axis=0)
+    return vector / max(float(np.linalg.norm(vector)), 1e-8)
+
+
 def adaptive_foreground_mask(crop: np.ndarray, min_delta: int = 38) -> np.ndarray:
     """Extract foreground from black/white/colored prompt areas without assuming a fixed text color."""
     if crop.size == 0:
@@ -1534,6 +1579,7 @@ def order_items_by_header_shape(
     items: list[dict[str, Any]],
     header_items: list[dict[str, Any]],
     image_rgb: Image.Image,
+    icon_model,
     fallback_shape_threshold: float = 0.45,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     icon_items = [item for item in items if item["kind"] == "icon"]
@@ -1549,12 +1595,37 @@ def order_items_by_header_shape(
 
     header_data: list[dict[str, Any]] = []
     body_masks = {id(item): icon_shape_mask(image_rgb, item["bbox"], header=False) for item in candidates}
+    body_embeddings = {
+        id(item): icon_embedding_for_box(
+            icon_model,
+            image_rgb,
+            item["bbox"],
+            header=False,
+        )
+        for item in candidates
+    }
     for header_item in sorted_headers:
         header_mask = icon_shape_mask(image_rgb, header_item["bbox"], header=True)
+        header_embedding = icon_embedding_for_box(
+            icon_model,
+            image_rgb,
+            header_item["bbox"],
+            header=True,
+        )
         inferred_label = infer_header_icon_label(header_mask, str(header_item.get("label", "")))
         score_map: dict[int, float] = {}
+        embedding_scores: dict[int, float] = {}
         for candidate in candidates:
             score = shape_similarity(header_mask, body_masks[id(candidate)])
+            embedding_score = float(
+                np.clip(
+                    (np.dot(header_embedding, body_embeddings[id(candidate)]) + 1.0)
+                    / 2.0,
+                    0.0,
+                    1.0,
+                )
+            )
+            score += 0.20 * embedding_score
             semantic_probability = float(
                 header_item.get("class_scores", {}).get(item_name(candidate), 0.0)
             )
@@ -1562,11 +1633,13 @@ def order_items_by_header_shape(
             if item_name(candidate) == inferred_label:
                 score += 0.12
             score_map[id(candidate)] = score
+            embedding_scores[id(candidate)] = embedding_score
         header_data.append(
             {
                 "item": header_item,
                 "inferred_label": inferred_label,
                 "scores": score_map,
+                "embedding_scores": embedding_scores,
             }
         )
 
@@ -1629,6 +1702,7 @@ def order_items_by_header_shape(
         enriched["matched_label"] = matched_label
         enriched["matched_center"] = matched_center
         enriched["shape_score"] = score
+        enriched["embedding_score"] = data["embedding_scores"][id(selected)]
         enriched["match_reason"] = match_reason
         enriched["shape_candidates"] = [
             {
@@ -2440,7 +2514,12 @@ def main() -> None:
             icon_model,
             icon_labels,
         )
-        final_results, target_items = order_items_by_header_shape(header_mode_results, target_items, rgb_image)
+        final_results, target_items = order_items_by_header_shape(
+            header_mode_results,
+            target_items,
+            rgb_image,
+            icon_model,
+        )
         matched_order = [item.get("matched_label", "") for item in target_items if item.get("matched_label")]
         if matched_order:
             resolved_target_order = ",".join(matched_order)
