@@ -1,0 +1,8 @@
+# Keep the pinned PaddleDetection/imgaug runtime compatible with NumPy 1.x.
+numpy<2
+opencv-python<=4.6.0
+
+# PaddleOCR pulls these variants indirectly. Newer 4.12+ wheels require
+# NumPy 2 on Python 3.10 and can break the older OpenCV/PaddleDetection ABI.
+opencv-contrib-python<4.12
+opencv-python-headless<4.12

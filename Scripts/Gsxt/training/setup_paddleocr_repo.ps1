@@ -9,6 +9,7 @@ $repoDir = "Scripts\Gsxt\third_party\PaddleOCR"
 $repoUrl = "https://github.com/PaddlePaddle/PaddleOCR.git"
 $repoCommit = "9f704bc6abf7a09f22593d597f633d62668b2984"
 $requirementsPath = Join-Path $repoDir "requirements.txt"
+$constraintsPath = "Scripts\Gsxt\runtime-constraints.txt"
 
 if (
     $DirectPython -and (
@@ -53,6 +54,9 @@ if (-not (Test-Path $requirementsPath)) {
     Write-Host $repoDir
     exit 1
 }
+if (-not (Test-Path $constraintsPath)) {
+    throw "Runtime constraints not found: $constraintsPath"
+}
 
 if ($DirectPython -or $env:CONDA_DEFAULT_ENV -eq $EnvName) {
     $python = Join-Path $env:CONDA_PREFIX "python.exe"
@@ -60,11 +64,11 @@ if ($DirectPython -or $env:CONDA_DEFAULT_ENV -eq $EnvName) {
         throw "Python not found under CONDA_PREFIX: $python"
     }
     Write-Host "Installing PaddleOCR training requirements with: $python"
-    & $python -m pip install -r $requirementsPath
+    & $python -m pip install -c $constraintsPath -r $requirementsPath
 }
 else {
     Write-Host "Installing PaddleOCR training requirements into $EnvName ..."
-    conda run -n $EnvName python -m pip install -r $requirementsPath
+    conda run -n $EnvName python -m pip install -c $constraintsPath -r $requirementsPath
 }
 
 if ($LASTEXITCODE -ne 0) {
