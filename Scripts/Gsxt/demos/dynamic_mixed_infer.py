@@ -1115,14 +1115,43 @@ def detect_header_icon_boxes(
             run_start = None
 
     def split_wide_header_box(local_start: int, local_end: int, box: list[int]) -> list[list[int]]:
-        bw = box[2] - box[0]
-        bh = box[3] - box[1]
-        if bh <= 0 or bw / max(1, bh) < 1.9:
+        # Use the unpadded foreground bounds here. The public box includes a
+        # six-pixel margin on every side; using that padded height can hide a
+        # genuinely wide run containing two touching prompt icons.
+        run_mask = mask[:, local_start:local_end]
+        run_coords = cv2.findNonZero(run_mask)
+        if run_coords is None:
+            return [box]
+        _, _, foreground_width, foreground_height = cv2.boundingRect(run_coords)
+        peer_widths = [
+            end - start
+            for start, end in runs
+            if start != local_start or end != local_end
+        ]
+        typical_peer_width = (
+            float(np.median(peer_widths)) if peer_widths else 0.0
+        )
+        aspect_wide = (
+            foreground_height > 0
+            and foreground_width / max(1, foreground_height) >= 1.9
+        )
+        peer_wide = (
+            len(runs) >= 2
+            and foreground_width >= 48
+            and typical_peer_width > 0
+            and foreground_width >= typical_peer_width * 1.65
+        )
+        if not aspect_wide and not peer_wide:
             return [box]
         # Several black prompt icons often touch after thresholding. When a
         # single run is much wider than one icon, split it into same-size
         # slices, then re-tighten each slice to foreground pixels.
-        estimated = int(round(bw / max(28.0, bh * 0.9)))
+        estimated = int(
+            round(
+                foreground_width
+                / max(28.0, foreground_height * 0.9)
+            )
+        )
         estimated = max(2, min(5, estimated))
         split_boxes: list[list[int]] = []
         for idx in range(estimated):
@@ -2142,8 +2171,14 @@ def resolve_task_spec(
     chinese_click_instruction = (
         instruction_score >= 0.72 and instruction_marker_count >= 2
     )
+    strong_header_text = (
+        bool(resolved_target_text)
+        and chinese_click_instruction
+        and target_text_score >= max(args.header_text_score, 0.92)
+    )
     common_evidence["instruction_marker_count"] = instruction_marker_count
     common_evidence["chinese_click_instruction"] = chinese_click_instruction
+    common_evidence["strong_header_text"] = strong_header_text
 
     if (
         resolved_target_text
@@ -2156,14 +2191,17 @@ def resolve_task_spec(
                 and any(marker in instruction_text for marker in ("请", "点击", "依次"))
             )
         )
-        and char_body_score >= 0.08
+        and (strong_header_text or char_body_score >= 0.08)
     ):
         return TaskSpec(
             action="explicit_order",
             modality="char",
             target_source="header_text",
             target_order=",".join(resolved_target_text),
-            confidence=char_hypothesis_score,
+            confidence=max(
+                char_hypothesis_score,
+                target_text_score * 0.85 if strong_header_text else 0.0,
+            ),
             evidence=common_evidence,
         )
 
