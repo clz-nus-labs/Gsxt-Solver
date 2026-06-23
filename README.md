@@ -32,7 +32,7 @@ evaluation images.
 - Python 3.10
 - PaddlePaddle 3.2
 - Git
-- GitHub CLI (`gh`) when accessing the private repository and model release
+- GitHub CLI (`gh`) only if you want to contribute through GitHub workflows
 
 For GPU inference, install a PaddlePaddle build compatible with the host's CUDA and
 CUDNN versions.
@@ -41,12 +41,8 @@ CUDNN versions.
 
 ### 1. Clone the repository
 
-For the current private repository, first authenticate an account with access:
-
 ```powershell
-gh auth login
-gh auth setup-git
-gh repo clone clz-nus/Gsxt-Solver
+git clone https://github.com/clz-nus-labs/Gsxt-Solver.git
 cd Gsxt-Solver
 ```
 
@@ -90,14 +86,10 @@ powershell -ExecutionPolicy Bypass `
 The model release contains the detector, character recognizer, icon classifier,
 recognition configuration, and icon label list.
 
-For the private repository:
-
 ```powershell
-$env:GH_TOKEN = gh auth token
-
 gsxt-models `
   --destination .\models\gsxt-models-v0.1.0 `
-  --release-base-url https://github.com/clz-nus/Gsxt-Solver/releases/download/models-v0.1.0
+  --release-base-url https://github.com/clz-nus-labs/Gsxt-Solver/releases/download/models-v0.1.0
 ```
 
 `gsxt-models` automatically:
@@ -109,7 +101,7 @@ gsxt-models `
 
 No manual weight concatenation is required.
 
-If the repository is made public later, the same command works without `GH_TOKEN`.
+The public model release does not require a GitHub token.
 
 ## Command-line usage
 
