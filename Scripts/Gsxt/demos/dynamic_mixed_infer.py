@@ -1820,10 +1820,13 @@ def parse_header_text_targets(text: str) -> list[str]:
     return [normalize_target_token(part) for part in parts if part.strip()]
 
 
-def is_semantic_order_instruction(text: str, score: float = 1.0) -> bool:
+def is_semantic_order_instruction(
+    text: str,
+    score: float = 1.0,
+    *,
+    has_prompt_targets: bool = False,
+) -> bool:
     """Return True for instruction-only headers such as 请按语序依次点击."""
-    if score < 0.45:
-        return False
     cleaned = re.sub(r"[\s，,。.;；:：、]+", "", text or "")
     if not cleaned:
         return False
@@ -1833,11 +1836,38 @@ def is_semantic_order_instruction(text: str, score: float = 1.0) -> bool:
     if any(marker in cleaned for marker in order_markers) and any(
         marker in cleaned for marker in action_markers
     ):
-        return True
+        return score >= 0.35
 
     # Tolerate a one-character OCR miss in the fixed prompt.
     compact_markers = ("按语序依次", "按顺序依次", "语序依次点", "顺序依次点")
-    return any(marker in cleaned for marker in compact_markers)
+    if any(marker in cleaned for marker in compact_markers):
+        return score >= 0.35
+
+    # When there are no prompt targets on the right, the header is usually one
+    # of a few fixed instruction-only strings. The OCR model often maps the
+    # small "语序依次" glyphs to visually similar fragments such as "语性",
+    # "性决", or "房作久". Keep this fuzzy branch disabled for prompt-target
+    # headers so explicit-order character/icon tasks are not stolen by the
+    # semantic-order path.
+    if has_prompt_targets:
+        return False
+    if score < 0.34:
+        return False
+
+    semantic_score = 0.0
+    if "语" in cleaned:
+        semantic_score += 0.45
+    if "序" in cleaned:
+        semantic_score += 0.25
+    if any(char in cleaned for char in ("性", "房")):
+        semantic_score += 0.20
+    if any(char in cleaned for char in ("决", "久", "人", "作", "依", "次")):
+        semantic_score += 0.18
+    if any(marker in cleaned for marker in ("点击", "点", "击")):
+        semantic_score += 0.16
+    if any(char in cleaned for char in ("请", "按")):
+        semantic_score += 0.08
+    return semantic_score >= 0.44
 
 
 def has_prompt_header(
@@ -2135,6 +2165,23 @@ def analyze_explicit_char_hypothesis(
     return compatibility, resolved_text, body_phrase_reason
 
 
+def ordered_char_overlap_ratio(reference: str, candidate: str) -> float:
+    reference = "".join(ch for ch in reference or "" if "\u4e00" <= ch <= "\u9fff")
+    candidate = "".join(ch for ch in candidate or "" if "\u4e00" <= ch <= "\u9fff")
+    if not candidate:
+        return 0.0
+    prev = [0] * (len(candidate) + 1)
+    for ref_char in reference:
+        current = prev[:]
+        for index, cand_char in enumerate(candidate, start=1):
+            if ref_char == cand_char:
+                current[index] = max(current[index], prev[index - 1] + 1)
+            else:
+                current[index] = max(current[index], current[index - 1], prev[index])
+        prev = current
+    return float(prev[-1]) / float(len(candidate))
+
+
 def resolve_task_spec(
     args,
     rgb_image: Image.Image,
@@ -2165,7 +2212,11 @@ def resolve_task_spec(
             args.header_ratio,
             left_end_ratio=1.0,
         )
-        if is_semantic_order_instruction(instruction_text, instruction_score):
+        if is_semantic_order_instruction(
+            instruction_text,
+            instruction_score,
+            has_prompt_targets=has_header,
+        ):
             return TaskSpec(
                 action="semantic_order",
                 modality="char",
@@ -2238,6 +2289,21 @@ def resolve_task_spec(
         "char_hypothesis_score": char_hypothesis_score,
         "icon_hypothesis_score": icon_hypothesis_score,
     }
+    if (
+        args.target_source == "auto"
+        and is_semantic_order_instruction(
+            instruction_text,
+            instruction_score,
+            has_prompt_targets=len(target_items) >= args.min_header_targets,
+        )
+    ):
+        return TaskSpec(
+            action="semantic_order",
+            modality="char",
+            target_source="body_chars",
+            confidence=instruction_score,
+            evidence=common_evidence,
+        )
     instruction_markers = ("请", "下图", "依次", "点击", "顺序")
     instruction_marker_count = sum(
         marker in instruction_text for marker in instruction_markers
@@ -2245,18 +2311,49 @@ def resolve_task_spec(
     chinese_click_instruction = (
         instruction_score >= 0.72 and instruction_marker_count >= 2
     )
+    prompt_target_overlap = ordered_char_overlap_ratio(
+        instruction_text,
+        resolved_target_text or target_text,
+    )
     strong_header_text = (
         bool(resolved_target_text)
         and chinese_click_instruction
         and target_text_score >= max(args.header_text_score, 0.92)
+        and (prompt_target_overlap >= 0.60 or char_body_score >= 0.25)
     )
     common_evidence["instruction_marker_count"] = instruction_marker_count
     common_evidence["chinese_click_instruction"] = chinese_click_instruction
     common_evidence["strong_header_text"] = strong_header_text
+    icon_prompt_conflict = (
+        len(target_items) >= args.min_header_targets
+        and not strong_header_text
+        and char_body_score < 0.24
+        and prompt_target_overlap < 0.60
+        and not (
+            instruction_score >= 0.85
+            and target_text_score >= 0.85
+            and prompt_target_overlap >= 0.60
+        )
+        and not (
+            instruction_score >= 0.85
+            and char_body_score >= 0.12
+            and str(body_phrase_reason).startswith("header-body-joint:")
+        )
+    )
+    common_evidence["prompt_target_overlap"] = prompt_target_overlap
+    common_evidence["icon_prompt_conflict"] = icon_prompt_conflict
 
     if (
         resolved_target_text
-        and chinese_click_instruction
+        and (
+            chinese_click_instruction
+            or (
+                instruction_score >= 0.82
+                and prompt_target_overlap >= 0.67
+                and char_body_score >= 0.25
+            )
+        )
+        and not icon_prompt_conflict
         and (
             target_text_score >= args.header_text_score
             or char_body_score >= 0.25
@@ -2529,6 +2626,12 @@ def main() -> None:
             resolved_target_order,
             normalize_aliases=not char_task,
             keep_unmatched=not char_task,
+        )
+
+    if semantic_instruction_task and len(final_results) > 3:
+        final_results = final_results[:3]
+        resolved_target_order = ",".join(
+            str(item.get("text") or item.get("label") or "") for item in final_results
         )
 
     task_type = task_spec.modality
