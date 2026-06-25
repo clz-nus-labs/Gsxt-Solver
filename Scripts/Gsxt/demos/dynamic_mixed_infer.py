@@ -2428,6 +2428,205 @@ def draw_results(image_path: Path, items: list[dict[str, Any]], output_path: Pat
     img.save(output_path)
 
 
+def predict_header_intent_shadow(
+    payload: dict[str, Any],
+    model_path: Path,
+    *,
+    threshold: float,
+    min_margin: float,
+) -> dict[str, Any]:
+    """Run the optional lightweight header-intent model in shadow mode.
+
+    This deliberately does not mutate the main inference result. It only records
+    whether the learned intent model would recommend a task/order override.
+    """
+
+    tools_dir = GSXT_ROOT / "tools"
+    if str(tools_dir) not in sys.path:
+        sys.path.insert(0, str(tools_dir))
+    try:
+        from train_header_intent_model import extract_features, matrix_from, softmax
+    except Exception as exc:  # pragma: no cover - optional diagnostic path
+        return {"enabled": False, "error": f"cannot import header intent tools: {exc}"}
+
+    try:
+        model = json.loads(model_path.read_text(encoding="utf-8"))
+        feature_names = list(model["feature_names"])
+        features = extract_features(payload)
+        x = matrix_from([features], feature_names)
+        mean = np.asarray(model["mean"], dtype=np.float64)
+        std = np.asarray(model["std"], dtype=np.float64)
+        weights = np.asarray(model["weights"], dtype=np.float64)
+        bias = np.asarray(model["bias"], dtype=np.float64)
+        probs = softmax(((x - mean) / std) @ weights + bias)[0]
+        classes = list(model["classes"])
+    except Exception as exc:  # pragma: no cover - optional diagnostic path
+        return {"enabled": False, "error": f"cannot run header intent model: {exc}"}
+
+    order = np.argsort(-probs)
+    best = int(order[0])
+    second = int(order[1]) if len(order) > 1 else best
+    label = classes[best]
+    if label.endswith("_given_order"):
+        predicted_task_type = label[: -len("_given_order")]
+        predicted_order_mode = "given_order"
+    elif label.endswith("_semantic_order"):
+        predicted_task_type = label[: -len("_semantic_order")]
+        predicted_order_mode = "semantic_order"
+    else:
+        predicted_task_type = label
+        predicted_order_mode = "unknown"
+
+    task_spec = payload.get("task_spec") or {}
+    rule_task_type = str(payload.get("task_type") or task_spec.get("modality") or "")
+    rule_order_mode = (
+        "semantic_order" if task_spec.get("action") == "semantic_order" else "given_order"
+    )
+    confidence = float(probs[best])
+    margin = float(probs[best] - probs[second]) if len(order) > 1 else confidence
+    disagrees = (
+        predicted_task_type != rule_task_type
+        or predicted_order_mode != rule_order_mode
+    )
+    override_recommended = confidence >= threshold and margin >= min_margin and disagrees
+
+    return {
+        "enabled": True,
+        "model": str(model_path),
+        "label": label,
+        "task_type": predicted_task_type,
+        "order_mode": predicted_order_mode,
+        "confidence": confidence,
+        "margin": margin,
+        "probabilities": {classes[idx]: float(probs[idx]) for idx in order},
+        "rule_task_type": rule_task_type,
+        "rule_order_mode": rule_order_mode,
+        "disagrees_with_rule": disagrees,
+        "override_threshold": threshold,
+        "override_margin": min_margin,
+        "override_recommended": override_recommended,
+    }
+
+
+def apply_header_intent_override(
+    *,
+    intent: dict[str, Any],
+    task_spec: TaskSpec,
+    raw_results: list[dict[str, Any]],
+    merged_results: list[dict[str, Any]],
+    rgb_image: Image.Image,
+    icon_model,
+    target_items: list[dict[str, Any]],
+    phrase_path: Path,
+    extra_phrase_paths: list[Path],
+    use_jieba: bool,
+) -> tuple[TaskSpec, list[dict[str, Any]], list[dict[str, Any]], str, str]:
+    if not intent.get("override_recommended"):
+        return task_spec, [], target_items, task_spec.target_order, task_spec.target_source
+
+    predicted_task_type = str(intent.get("task_type") or "")
+    predicted_order_mode = str(intent.get("order_mode") or "")
+    evidence = dict(task_spec.evidence or {})
+    evidence["header_intent_override"] = {
+        "label": intent.get("label"),
+        "confidence": intent.get("confidence"),
+        "margin": intent.get("margin"),
+        "previous_modality": task_spec.modality,
+        "previous_action": task_spec.action,
+        "previous_target_source": task_spec.target_source,
+    }
+
+    if predicted_task_type == "char" and predicted_order_mode == "semantic_order":
+        char_candidates = [item for item in raw_results if item.get("kind") == "char"]
+        candidate_results = char_candidates if len(char_candidates) >= 2 else merged_results
+        semantic_order, semantic_reason = infer_semantic_target_order(
+            candidate_results,
+            phrase_path,
+            extra_phrase_paths=extra_phrase_paths,
+            use_jieba=use_jieba,
+        )
+        final_results = order_items_by_target(
+            candidate_results,
+            semantic_order,
+            normalize_aliases=False,
+            keep_unmatched=False,
+        )
+        if len(final_results) > 3:
+            final_results = final_results[:3]
+        if len(final_results) < 3:
+            return task_spec, [], target_items, task_spec.target_order, task_spec.target_source
+        target_order = ",".join(str(item.get("text") or "") for item in final_results)
+        new_spec = TaskSpec(
+            action="semantic_order",
+            modality="char",
+            target_source=semantic_reason or "header_intent_model",
+            target_order=target_order,
+            confidence=float(intent.get("confidence") or 0.0),
+            evidence=evidence,
+        )
+        return new_spec, final_results, [], target_order, new_spec.target_source
+
+    if predicted_task_type == "char" and predicted_order_mode == "given_order":
+        target_text = str(
+            evidence.get("resolved_header_target_text")
+            or evidence.get("header_target_text")
+            or ""
+        )
+        target_text = "".join(ch for ch in target_text if "\u4e00" <= ch <= "\u9fff")
+        if len(target_text) >= 2:
+            char_candidates = [item for item in raw_results if item.get("kind") == "char"]
+            candidate_results = (
+                char_candidates
+                if len(char_candidates) >= min(len(target_text), 2)
+                else merged_results
+            )
+            final_results = order_items_by_target(
+                candidate_results,
+                ",".join(target_text),
+                normalize_aliases=False,
+                keep_unmatched=False,
+            )
+            if len(final_results) < min(len(target_text), 3):
+                return task_spec, [], target_items, task_spec.target_order, task_spec.target_source
+            new_spec = TaskSpec(
+                action="explicit_order",
+                modality="char",
+                target_source="header_intent_model",
+                target_order=",".join(target_text),
+                confidence=float(intent.get("confidence") or 0.0),
+                evidence=evidence,
+            )
+            return new_spec, final_results, [], new_spec.target_order, new_spec.target_source
+
+    if predicted_task_type == "icon" and predicted_order_mode == "given_order" and target_items:
+        header_mode_results = restore_icon_candidates_for_header_mode(merged_results)
+        header_mode_results = promote_char_candidates_for_header_mode(
+            header_mode_results,
+            rgb_image,
+            icon_model,
+            target_items,
+        )
+        final_results, new_target_items = order_items_by_header_shape(
+            header_mode_results,
+            target_items,
+            rgb_image,
+            icon_model,
+        )
+        matched_order = [str(item.get("label") or "") for item in final_results]
+        new_spec = TaskSpec(
+            action="explicit_order",
+            modality="icon",
+            target_source="header_intent_model",
+            target_order=",".join(matched_order),
+            target_items=new_target_items,
+            confidence=float(intent.get("confidence") or 0.0),
+            evidence=evidence,
+        )
+        return new_spec, final_results, new_target_items, new_spec.target_order, new_spec.target_source
+
+    return task_spec, [], target_items, task_spec.target_order, task_spec.target_source
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Dynamic mixed detector/OCR/icon inference.")
     parser.add_argument("--image", default=str(DEFAULT_IMAGE))
@@ -2476,6 +2675,18 @@ def main() -> None:
     parser.add_argument("--max-header-text-targets", type=int, default=8)
     parser.add_argument("--header-icon-score", type=float, default=0.02)
     parser.add_argument("--min-header-targets", type=int, default=2)
+    parser.add_argument(
+        "--header-intent-model",
+        default="",
+        help="Optional lightweight header-intent model JSON.",
+    )
+    parser.add_argument(
+        "--header-intent-apply",
+        action="store_true",
+        help="Apply high-confidence lightweight header-intent overrides.",
+    )
+    parser.add_argument("--header-intent-threshold", type=float, default=0.75)
+    parser.add_argument("--header-intent-margin", type=float, default=0.25)
     parser.add_argument("--cpu", action="store_true")
     args = parser.parse_args()
 
@@ -2654,6 +2865,44 @@ def main() -> None:
         "merged_items": merged_results,
         "items": final_results,
     }
+    if args.header_intent_model:
+        payload["header_intent_model"] = predict_header_intent_shadow(
+            payload,
+            Path(args.header_intent_model),
+            threshold=args.header_intent_threshold,
+            min_margin=args.header_intent_margin,
+        )
+        if args.header_intent_apply and payload["header_intent_model"].get("override_recommended"):
+            (
+                task_spec,
+                override_results,
+                target_items,
+                resolved_target_order,
+                target_source_resolved,
+            ) = apply_header_intent_override(
+                intent=payload["header_intent_model"],
+                task_spec=task_spec,
+                raw_results=results,
+                merged_results=merged_results,
+                rgb_image=rgb_image,
+                icon_model=icon_model,
+                target_items=target_items,
+                phrase_path=Path(args.semantic_phrases),
+                extra_phrase_paths=[Path(path) for path in args.semantic_extra],
+                use_jieba=not args.no_jieba_semantic,
+            )
+            if override_results:
+                final_results = override_results
+                task_type = task_spec.modality
+                payload["task_type"] = task_type
+                payload["task_spec"] = asdict(task_spec)
+                payload["merge_settings"]["target_source_resolved"] = target_source_resolved
+                payload["merge_settings"]["resolved_target_order"] = resolved_target_order
+                payload["target_items"] = target_items
+                payload["items"] = final_results
+                payload["header_intent_model"]["override_applied"] = True
+            else:
+                payload["header_intent_model"]["override_applied"] = False
     result_path = output_dir / "result.json"
     result_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     visual_path = output_dir / "visual" / image_path.name

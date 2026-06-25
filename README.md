@@ -8,6 +8,7 @@ requested order.
 The package provides:
 
 - automatic task-type inference for character and icon tasks;
+- lightweight header-intent arbitration for noisy prompt OCR;
 - character recognition with semantic lexicon decoding;
 - icon classification plus prompt-to-body shape and embedding matching;
 - a Python API and command-line interface;
@@ -176,6 +177,10 @@ details, and runtime logs. It saves `result.json` and the annotated image by def
 Use `--no-save-result` or `--no-save-visual` to disable either file.
 
 Remove `--cpu` to use the configured GPU environment.
+
+The Python API and CLI enable the bundled lightweight header-intent model by
+default. It only applies high-confidence task/order overrides and can be disabled
+with `--no-header-intent` when comparing against the rule-only pipeline.
 
 When saving is enabled, the output directory contains:
 

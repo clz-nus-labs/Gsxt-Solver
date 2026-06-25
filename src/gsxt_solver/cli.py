@@ -39,6 +39,12 @@ def main() -> None:
     parser.add_argument("--target-order", default="")
     parser.add_argument("--cpu", action="store_true")
     parser.add_argument(
+        "--header-intent",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Use the bundled lightweight header-intent model for high-confidence arbitration.",
+    )
+    parser.add_argument(
         "--mode",
         choices=["standard", "debug"],
         default="standard",
@@ -53,12 +59,14 @@ def main() -> None:
             args.model_dir,
             python_executable=args.python_executable,
             use_gpu=not args.cpu,
+            use_header_intent=args.header_intent,
         )
     else:
         solver = Solver.from_project(
             project_root,
             python_executable=args.python_executable,
             use_gpu=not args.cpu,
+            use_header_intent=args.header_intent,
         )
     result = solver.solve(
         args.image,
