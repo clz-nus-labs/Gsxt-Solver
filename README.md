@@ -13,7 +13,8 @@ The package provides:
 - icon classification plus prompt-to-body shape and embedding matching;
 - a Python API and command-line interface;
 - automatic model download, verification, and directory assembly;
-- 50 bundled evaluation images for regression testing.
+- 200 bundled annotated evaluation images for regression testing and prompt parsing
+  improvement.
 
 ## Supported use cases
 
@@ -294,7 +295,7 @@ Standard result fields:
 | `result.points` | Ordered center points |
 | `result.items` | Ordered values, centers, and bounding boxes |
 
-## Run the 50-image evaluation set
+## Run the fixture test suite
 
 ```powershell
 gsxt-test-suite `
@@ -317,8 +318,14 @@ runs/test-suite/summary.json
 - Unusual prompt layouts can affect task-type and target-order inference.
 - Small, overlapping, or heavily distorted regions can cause missed or duplicate detections.
 - Semantic ordering quality depends on recognition candidates and lexicon coverage.
-- The 50 bundled images are regression inputs; authoritative ground-truth annotations are
-  not yet included.
+- The bundled 200-image annotation set is intended for regression analysis and
+  lightweight prompt-intent/header improvements; it is not a broad open-domain benchmark.
+
+Bundled data:
+
+- images: `Scripts/Gsxt/data/images`
+- annotations: `Scripts/Gsxt/data/annotations/gsxt_200_simple_annotation.json`
+- editable annotation table: `Scripts/Gsxt/data/annotations/gsxt_200_simple_annotation.xlsx`
 
 See [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) for the planned evaluation, training, and
 decoding improvements.
