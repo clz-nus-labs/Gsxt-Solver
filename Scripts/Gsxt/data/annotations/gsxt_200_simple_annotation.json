@@ -1,0 +1,4425 @@
+{
+  "schema_version": "gsxt-simple-annotation-v1",
+  "summary": {
+    "rows": 200,
+    "usable": {
+      "yes": 200
+    },
+    "task_type": {
+      "char": 127,
+      "icon": 73
+    },
+    "instruction_text": {
+      "select in this order": 72,
+      "请在下图依次点击": 64,
+      "请按语序依次点击": 64
+    },
+    "order_mode": {
+      "given_order": 136,
+      "semantic_order": 64
+    }
+  },
+  "validation_errors": [],
+  "items": [
+    {
+      "image": "test.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "香烟"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "纽扣"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "镜头"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test2.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "古"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "罗"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "马"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test3.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "橄榄球"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "网球"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "探照灯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test4.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "创可贴（或人行横道）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "橄榄球"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "磁铁"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test5.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "碰杯"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "温度计"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "磁铁"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test6.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "指南针"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "马戏团（不清楚）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "锤子"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test7.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "戒指（ring)"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "磁带"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "房子"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test8.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "墓碑"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "垃圾桶"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "浴缸"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test9.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "收纳柜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "自行车"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "喇叭（吹号）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test10.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "火烈鸟"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蝗虫"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "灭火器（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test11.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "风扇"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "创可贴（或人行横道）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "瓢虫"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test12.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "剑"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "喇叭（吹号）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test13.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "铃铛"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "沙漏"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "泰迪熊"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test14.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "象棋（不清楚）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "猫头鹰"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "火车"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test15.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "马戏团（不清楚）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "雪糕"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "风扇"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test16.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "米"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "凉"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "粉"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test17.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "猴"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "头"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "菇"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test18.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "佛"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "手"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "酥"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test19.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "走"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "油"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "肉"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test20.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "姜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "汁"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "饼"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test21.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "唐"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "纳"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "滋"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test22.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "晒"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "炉"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "肉"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test23.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "面"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "包"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "糠"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test24.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "太"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "阳"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "糕"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test25.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "溜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "黄"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "菜"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test26.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "文"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "学"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "奖"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test27.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "使"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "用"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "权"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test28.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "尼"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "泊"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "尔"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test29.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "输"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "入"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "法"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test30.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "超"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "音"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "速"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test31.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "氧"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "化"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "剂"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test32.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "说"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "明"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "了"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test33.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "很"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "好"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test34.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "云"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "南"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "省"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test35.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "生"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "长"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "期"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test36.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "烧"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "花"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "鸭"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test37.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "牛"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "展"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "汤"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test38.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "茶"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "叶"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "粥"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test39.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "炸"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "飞"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "禽"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test40.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "马"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "虎"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "面"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test41.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "洪"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "都"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "鸡"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test42.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "幸"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "福"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "双"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test43.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "马"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "虎"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "面"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test44.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "氧"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "化"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "镁"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test45.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "萨"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "拉"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "米"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test46.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "摩天轮"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "汉堡"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蜗牛"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test47.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "举重"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "吊灯"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "探照灯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test48.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "猫头鹰"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蝗虫"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "安全出口（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test49.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "汽车"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "射击（或拍摄）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "喇叭（吹号）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test50.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "钱袋"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "篮球"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test51.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "防"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "火"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "墙"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test52.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "连"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "续"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "剧"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test53.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "多"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "年"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "来"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test54.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "巨"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "大"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test55.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "衍"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "生"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "物"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test56.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "体"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "制"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test57.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "可"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "怕"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test58.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "哲"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "学"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "家"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test59.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "音"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "乐"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "剧"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test60.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "新"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "能"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "源"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test61.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "吉他"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "工具箱"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蛇"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test62.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "打火机（不清楚）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "轮子"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "萝卜（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test63.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "自行车"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "垃圾桶"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "收音机（音乐播放器）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test64.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "磁带"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "火烈鸟"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test65.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "天平"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "墓碑"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "路灯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test66.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "蝴蝶"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "吊灯"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "天平"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test67.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "熊掌"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "国际象棋（不清楚）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蛇"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test68.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "橡果"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "洗漱台"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "橄榄球"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test69.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "铃铛"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "网球"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "叶子"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test70.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "风扇"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "冰棒"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "涡轮（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test71.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "毕"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "业"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "生"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test72.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "笔"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "记"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "本"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test73.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "字"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "符"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "串"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test74.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "柴"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "油"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "机"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test75.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "热"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "水"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "器"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test76.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "花"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "岗"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "岩"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test77.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "方"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "向"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "盘"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test78.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "上"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "海"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "市"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test79.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "自"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "定"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "义"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test80.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "分"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "辨"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "率"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test81.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "牛"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "里"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "脊"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test82.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "白"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "丰"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "糕"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test83.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "川"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "红"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "茶"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test84.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "夜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "光"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "杯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test85.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "啤"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "酒"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "鱼"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test86.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "麻"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "烘"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "糕"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test87.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "蓝"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "圣"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "斯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test88.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "金"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "钱"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "饼"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test89.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "打"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "油"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "茶"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test90.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "耳"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "朵"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "眼"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test91.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "马戏团（不清楚）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "喇叭（吹号）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test92.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "淋浴头"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "咖啡豆"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "钥匙"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test93.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "蝴蝶"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "冰棒"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "涡轮（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test94.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "风扇"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "戒指（ring)"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "墨水和钢笔"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test95.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "网球"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "火烈鸟"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "橡果"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test96.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "项链"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "吊灯"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "探照灯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test97.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "汽车"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "香烟"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "涡轮（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test98.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "摩天轮"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "不清楚"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test99.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "橡果"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "生化（辐射）标识"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "冰淇淋"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test100.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "项链"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "收音机（音乐播放器）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "轮子"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test101.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蜗牛"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蛇"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test102.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "篮球"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "冰棒"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "磁铁"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test103.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "摩天轮"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "不清楚"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test104.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "瓢虫"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蜗牛"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "摩天轮"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test105.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "吉他"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "工具箱"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蛇"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test106.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "电脑"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "飞机（落地）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "网球"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test107.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "摄像（射击）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "轮子"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "老鹰头"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test108.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "吊灯"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "橡果"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "项链"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test109.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "射箭"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "探照灯"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蜻蜓"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test110.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "污渍（闪光点）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "创可贴（或人行横道）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "指南针"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test111.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "天平"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "鸭子"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "摄像（射击）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test112.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "大脑"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "收纳柜"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "火车头"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test113.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "汉堡"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "喇叭"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "香烟"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test114.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "磁带"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "辣椒"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "排球"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test115.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "摩天轮"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "指南针"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test116.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "摩天轮"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "指南针"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "萝卜（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test117.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "摄像头"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "排球"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "举重"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test118.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "墨水"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "闹钟"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test119.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "蛇"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "叶子"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "鼓"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test120.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "收音机（音乐播放器）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "气球"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test121.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "别墅"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "闹钟"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "保龄球瓶"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test122.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "钱袋"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "生化（辐射）标识"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "项链"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test123.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "面条"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蜗牛"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "摄像头"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test124.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "花"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "萝卜"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "吊灯"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test125.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "蝗虫"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "自行车"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "芭菲"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test126.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "摄像（射击）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "挥手（禁止）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "迪斯科球（不清楚）"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test127.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "瓢虫"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蝗虫"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "鼓"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test128.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "香烟"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "钥匙（钥匙扣）"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "自行车"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test129.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "温度计"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "垃圾桶"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test130.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "摄像头"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "轮子"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "牙齿"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test131.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "花束（小花）"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "不清楚"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "浴缸"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test132.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "墓碑"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "冰棒"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蝴蝶"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test133.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "保龄球瓶"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "铃铛"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "猫头鹰"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test134.png",
+      "usable": true,
+      "task_type": "icon",
+      "instruction_text": "select in this order",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "收纳柜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "大炮"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "别墅"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test135.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "管"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "理"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "学"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test136.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "数"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "据"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "线"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test137.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "火"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "车"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "站"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test138.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "很"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "简"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "单"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test139.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "未"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "来"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test140.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "说"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "明"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "书"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test141.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "云"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "南"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "省"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test142.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "管"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "理"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "者"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test143.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "有"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "计"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "划"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test144.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "普"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "通"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "人"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test145.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "反"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "过"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "来"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test146.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "自"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "然"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test147.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "阅"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "览"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "室"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test148.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "博"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "士"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "后"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test149.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "排"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "行"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "榜"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test150.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "可"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "怕"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test151.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "竞"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "争"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "力"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test152.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "安"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "全"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test153.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "多"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "方"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "面"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test154.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "命"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "中"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "率"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test155.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "华"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "盛"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "顿"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test156.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "管"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "理"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "学"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test157.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "合"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "作"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "社"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test158.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "皇"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "太"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "后"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test159.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "技"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "术"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "的"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test160.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "发"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "明"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "了"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test161.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "身"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "份"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "证"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test162.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "抵"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "抗"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "力"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test163.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "停"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "车"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "场"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test164.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "新"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "西"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "兰"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test165.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "博"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "物"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "馆"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test166.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "有"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "计"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "划"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test167.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请按语序依次点击",
+      "order_mode": "semantic_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "播"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "放"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "器"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test168.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "燕"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "喜"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "堂"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test169.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "馏"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "鱼"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "片"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test170.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "韭"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "菜"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "包"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test171.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "紫"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "红"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "草"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test172.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "护"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "色"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "剂"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test173.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "烤"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "鱼"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "片"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test174.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "味"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "之"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "臾"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test175.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "温"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "泉"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "鸡"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test176.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "草"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "香"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "园"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test177.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "红"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "松"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "宝"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test178.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "菜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "烩"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "面"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test179.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "刷"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "把"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "头"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test180.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "炒"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "米"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "粉"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test181.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "西"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "兰"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "花"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test182.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "秦"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "川"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "牌"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test183.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "甜"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "味"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "剂"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test184.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "九"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "黄"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "饼"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test185.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "风"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "车"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "酥"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test186.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "炒"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "米"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "糖"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test187.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "鸭"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "掌"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "包"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test188.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "大"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "卤"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "面"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test189.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "糖"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "心"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "蛋"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test190.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "建"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "新"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "园"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test191.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "杏"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "皮"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "水"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test192.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "青"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "木"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "瓜"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test193.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "大"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "团"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "圆"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test194.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "豆"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "腐"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "脑"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test195.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "南"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "煎"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "肝"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test196.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "冰"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "之"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "恋"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test197.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "辣"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "白"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "菜"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test198.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "粉"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "蒸"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "肉"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test199.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "烩"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "麻"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "食"
+        }
+      ],
+      "note": ""
+    },
+    {
+      "image": "test200.png",
+      "usable": true,
+      "task_type": "char",
+      "instruction_text": "请在下图依次点击",
+      "order_mode": "given_order",
+      "targets": [
+        {
+          "index": 1,
+          "value_or_desc": "麦"
+        },
+        {
+          "index": 2,
+          "value_or_desc": "打"
+        },
+        {
+          "index": 3,
+          "value_or_desc": "滚"
+        }
+      ],
+      "note": ""
+    }
+  ]
+}
