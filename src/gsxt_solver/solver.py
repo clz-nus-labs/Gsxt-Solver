@@ -25,11 +25,19 @@ class Solver:
         models: ModelPaths,
         python_executable: str | Path | None = None,
         use_gpu: bool = True,
+        use_header_intent: bool = True,
+        header_intent_model: str | Path | None = None,
     ) -> None:
         self.project_root = Path(project_root).resolve()
         self.models = models
         self.python_executable = str(python_executable or sys.executable)
         self.use_gpu = use_gpu
+        self.use_header_intent = use_header_intent
+        self.header_intent_model = (
+            Path(header_intent_model).resolve()
+            if header_intent_model is not None
+            else self._default_header_intent_model()
+        )
         self.backend = (
             self.project_root
             / "Scripts"
@@ -37,6 +45,11 @@ class Solver:
             / "demos"
             / "dynamic_mixed_infer.py"
         )
+
+    @staticmethod
+    def _default_header_intent_model() -> Path | None:
+        path = Path(__file__).resolve().parent / "assets" / "header_intent_model_200.json"
+        return path if path.exists() else None
 
     @classmethod
     def from_project(
@@ -46,6 +59,8 @@ class Solver:
         models: ModelPaths | None = None,
         python_executable: str | Path | None = None,
         use_gpu: bool = True,
+        use_header_intent: bool = True,
+        header_intent_model: str | Path | None = None,
     ) -> "Solver":
         root = Path(project_root).resolve()
         return cls(
@@ -53,6 +68,8 @@ class Solver:
             models=models or ModelPaths.from_project(root),
             python_executable=python_executable,
             use_gpu=use_gpu,
+            use_header_intent=use_header_intent,
+            header_intent_model=header_intent_model,
         )
 
     @classmethod
@@ -63,6 +80,8 @@ class Solver:
         *,
         python_executable: str | Path | None = None,
         use_gpu: bool = True,
+        use_header_intent: bool = True,
+        header_intent_model: str | Path | None = None,
     ) -> "Solver":
         """Create a solver from a model directory assembled by ``gsxt-models``."""
 
@@ -72,6 +91,8 @@ class Solver:
             models=ModelPaths.from_bundle(model_dir, project_root=root),
             python_executable=python_executable,
             use_gpu=use_gpu,
+            use_header_intent=use_header_intent,
+            header_intent_model=header_intent_model,
         )
 
     def validate(self) -> None:
@@ -135,6 +156,14 @@ class Solver:
         ]
         if target_order:
             command.extend(["--target-order", target_order])
+        if self.use_header_intent and self.header_intent_model is not None:
+            command.extend(
+                [
+                    "--header-intent-model",
+                    str(self.header_intent_model),
+                    "--header-intent-apply",
+                ]
+            )
         if not self.use_gpu:
             command.append("--cpu")
 
