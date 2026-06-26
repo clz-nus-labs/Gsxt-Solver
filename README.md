@@ -83,6 +83,21 @@ powershell -ExecutionPolicy Bypass `
   -DirectPython
 ```
 
+`-DirectPython` expects the target conda environment to already be activated. If you
+run the setup scripts from a shell where `conda activate gsxt_solver` has not been
+applied, omit `-DirectPython`; the scripts will use `conda run -n gsxt_solver`
+internally:
+
+```powershell
+powershell -ExecutionPolicy Bypass `
+  -File .\Scripts\Gsxt\training\setup_paddledetection_repo.ps1 `
+  -EnvName gsxt_solver
+
+powershell -ExecutionPolicy Bypass `
+  -File .\Scripts\Gsxt\training\setup_paddleocr_repo.ps1 `
+  -EnvName gsxt_solver
+```
+
 ## Download and assemble the models
 
 The model release contains the detector, character recognizer, icon classifier,
