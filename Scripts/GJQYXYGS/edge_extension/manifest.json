@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "GSXT Send Report Assistant",
+  "version": "0.1.0",
+  "description": "Automates GSXT search and send-report flow inside a normal Chrome/Edge tab.",
+  "permissions": ["storage", "activeTab", "tabs"],
+  "host_permissions": [
+    "https://www.gsxt.gov.cn/*",
+    "https://shiming.gsxt.gov.cn/*",
+    "https://*.gsxt.gov.cn/*",
+    "<all_urls>",
+    "http://127.0.0.1:7755/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.gsxt.gov.cn/*",
+        "https://shiming.gsxt.gov.cn/*"
+      ],
+      "js": ["content.js"],
+      "css": ["panel.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

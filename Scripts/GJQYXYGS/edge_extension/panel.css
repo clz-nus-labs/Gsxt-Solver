@@ -1,0 +1,78 @@
+#gsxt-assistant-panel {
+  position: fixed;
+  right: 18px;
+  top: 88px;
+  z-index: 2147483647;
+  width: 320px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #c9a958;
+  background: #fff;
+  color: #222;
+  font: 13px/1.45 Arial, "Microsoft YaHei", sans-serif;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+
+#gsxt-assistant-panel.gsxt-minimized {
+  width: auto;
+  padding: 8px 10px;
+}
+
+#gsxt-assistant-panel .ga-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+#gsxt-assistant-panel textarea {
+  width: 100%;
+  height: 116px;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid #d6c38e;
+  padding: 7px;
+  font: 13px/1.4 Consolas, "Microsoft YaHei", monospace;
+}
+
+#gsxt-assistant-panel .ga-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+#gsxt-assistant-panel button {
+  border: 0;
+  background: #d4b75f;
+  color: #fff;
+  padding: 6px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+#gsxt-assistant-panel button.ga-secondary {
+  background: #777;
+}
+
+#gsxt-assistant-panel button.ga-danger {
+  background: #b64a4a;
+}
+
+#gsxt-assistant-panel .ga-status {
+  margin-top: 8px;
+  padding: 7px;
+  min-height: 38px;
+  background: #f8f4e8;
+  white-space: pre-wrap;
+}
+
+#gsxt-assistant-panel .ga-note {
+  margin-top: 6px;
+  color: #666;
+  font-size: 12px;
+}
+
+#gsxt-assistant-panel.gsxt-minimized .ga-body {
+  display: none;
+}

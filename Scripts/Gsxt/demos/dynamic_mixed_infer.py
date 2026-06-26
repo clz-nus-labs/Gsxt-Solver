@@ -1748,6 +1748,44 @@ def recognize_header_text(
     return text.strip(), score
 
 
+def recognize_header_instruction_text(
+    bgr: np.ndarray,
+    rec_model,
+    rec_post,
+    header_ratio: float,
+) -> tuple[str, float]:
+    """Recognize the left-side prompt while avoiding right-side target glyphs.
+
+    Real Geetest crops often put colored/distorted target glyphs on the right.
+    Feeding the whole header into the recognizer can make the prompt OCR fail
+    completely, which then lets those target glyphs be treated as icons. Try a
+    few left-only crops first, then fall back to the wider header.
+    """
+    candidates: list[tuple[str, float]] = []
+    for ratio in (0.52, 0.60, 0.68, 0.78, 1.0):
+        text, score = recognize_header_text(
+            bgr,
+            rec_model,
+            rec_post,
+            header_ratio,
+            left_end_ratio=ratio,
+        )
+        if text:
+            candidates.append((text, score))
+            if is_semantic_order_instruction(text, score, has_prompt_targets=False):
+                return text, score
+    if not candidates:
+        return "", 0.0
+    return max(
+        candidates,
+        key=lambda row: (
+            is_semantic_order_instruction(row[0], row[1], has_prompt_targets=False),
+            row[1],
+            len(row[0]),
+        ),
+    )
+
+
 def recognize_header_target_text(
     bgr: np.ndarray,
     rec_model,
@@ -2205,12 +2243,11 @@ def resolve_task_spec(
     instruction_text = ""
     instruction_score = 0.0
     if args.target_source == "auto":
-        instruction_text, instruction_score = recognize_header_text(
+        instruction_text, instruction_score = recognize_header_instruction_text(
             bgr,
             rec_model,
             rec_post,
             args.header_ratio,
-            left_end_ratio=1.0,
         )
         if is_semantic_order_instruction(
             instruction_text,
@@ -2388,7 +2425,12 @@ def resolve_task_spec(
         )
 
     if args.target_source in {"auto"} and has_header:
-        header_text, header_text_score = recognize_header_text(bgr, rec_model, rec_post, args.header_ratio)
+        header_text, header_text_score = recognize_header_instruction_text(
+            bgr,
+            rec_model,
+            rec_post,
+            args.header_ratio,
+        )
         targets = parse_header_text_targets(header_text)
         if targets:
             return TaskSpec(
@@ -2598,7 +2640,12 @@ def apply_header_intent_override(
             )
             return new_spec, final_results, [], new_spec.target_order, new_spec.target_source
 
-    if predicted_task_type == "icon" and predicted_order_mode == "given_order" and target_items:
+    if (
+        predicted_task_type == "icon"
+        and predicted_order_mode == "given_order"
+        and target_items
+        and not (task_spec.modality == "char" and task_spec.action == "semantic_order")
+    ):
         header_mode_results = restore_icon_candidates_for_header_mode(merged_results)
         header_mode_results = promote_char_candidates_for_header_mode(
             header_mode_results,
