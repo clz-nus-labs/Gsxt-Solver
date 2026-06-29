@@ -10,6 +10,7 @@ Commit:
 - dataset conversion, synthetic generation and semantic lexicon utilities
 - semantic lexicons that permit redistribution
 - package metadata, documentation, and tests
+- the local browser-extension bridge under `Scripts/GJQYXYGS`
 
 Do not commit:
 
@@ -18,7 +19,7 @@ Do not commit:
 - large training datasets
 - local virtual environments
 - cloned Paddle repositories as ordinary copied directories
-- browser profiles, logs, downloaded reports, and the unrelated `Scripts/GJQYXYGS` project
+- browser profiles, logs, downloaded reports, and generated debug captures
 
 ## 2. Third-party repositories
 
@@ -63,7 +64,7 @@ Users download them with:
 
 ```powershell
 gsxt-models `
-  --destination .\models\gsxt-models-v0.1.0 `
+  --destination .\dist\models\gsxt-models-v0.1.0 `
   --release-base-url https://github.com/OWNER/REPOSITORY/releases/download/models-v0.1.0
 ```
 

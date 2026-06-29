@@ -10,7 +10,7 @@ Run all fixtures after installing the package and downloading the model bundle:
 ```powershell
 gsxt-test-suite `
   --project-root . `
-  --model-dir .\models\gsxt-models-v0.1.0 `
+  --model-dir .\dist\models\gsxt-models-v0.1.0 `
   --fixtures .\tests\fixtures `
   --output-dir .\runs\test-suite
 ```
