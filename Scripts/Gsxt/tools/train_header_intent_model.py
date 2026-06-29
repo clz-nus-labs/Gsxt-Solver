@@ -52,6 +52,8 @@ TEXT_TOKENS = [
 NUMERIC_FEATURES = [
     "instruction_score",
     "header_target_text_score",
+    "boxed_header_target_text_score",
+    "boxed_header_target_count",
     "char_body_compatibility",
     "char_hypothesis_score",
     "icon_hypothesis_score",
@@ -63,9 +65,11 @@ NUMERIC_FEATURES = [
     "icon_prompt_conflict",
     "has_header_target_text",
     "has_resolved_header_target_text",
+    "has_boxed_header_target_text",
     "instruction_len",
     "header_target_len",
     "resolved_header_target_len",
+    "boxed_header_target_len",
     "instruction_cjk_count",
     "header_target_cjk_count",
     "resolved_header_target_cjk_count",
@@ -122,11 +126,14 @@ def load_annotations(path: Path) -> list[dict[str, Any]]:
     return [item for item in payload.get("items", []) if item.get("usable", True)]
 
 
-def load_result(runs_dir: Path, image: str) -> dict[str, Any]:
-    result_path = runs_dir / Path(image).stem / "result.json"
-    if not result_path.exists():
-        raise FileNotFoundError(result_path)
-    return json.loads(result_path.read_text(encoding="utf-8"))
+def load_result(runs_dirs: list[Path], image: str) -> dict[str, Any]:
+    checked: list[str] = []
+    for runs_dir in runs_dirs:
+        result_path = runs_dir / Path(image).stem / "result.json"
+        checked.append(str(result_path))
+        if result_path.exists():
+            return json.loads(result_path.read_text(encoding="utf-8"))
+    raise FileNotFoundError("result.json not found in any --runs-dir: " + " | ".join(checked))
 
 
 def kind_counts(items: list[dict[str, Any]]) -> Counter:
@@ -145,6 +152,8 @@ def extract_features(result: dict[str, Any]) -> dict[str, float]:
     instruction = str(evidence.get("instruction_text") or "")
     target = str(evidence.get("header_target_text") or "")
     resolved = str(evidence.get("resolved_header_target_text") or "")
+    boxed = str(evidence.get("boxed_header_target_text") or "")
+    boxed_items = evidence.get("boxed_header_target_items") or []
     body_phrase_reason = str(evidence.get("body_phrase_reason") or "")
     raw_items = result.get("raw_items") or []
     merged_items = result.get("merged_items") or []
@@ -155,6 +164,8 @@ def extract_features(result: dict[str, Any]) -> dict[str, float]:
     features = {
         "instruction_score": to_float(evidence.get("instruction_score")),
         "header_target_text_score": to_float(evidence.get("header_target_text_score")),
+        "boxed_header_target_text_score": to_float(evidence.get("boxed_header_target_text_score")),
+        "boxed_header_target_count": float(len(boxed_items)),
         "char_body_compatibility": to_float(evidence.get("char_body_compatibility")),
         "char_hypothesis_score": to_float(evidence.get("char_hypothesis_score")),
         "icon_hypothesis_score": to_float(evidence.get("icon_hypothesis_score")),
@@ -166,9 +177,11 @@ def extract_features(result: dict[str, Any]) -> dict[str, float]:
         "icon_prompt_conflict": 1.0 if evidence.get("icon_prompt_conflict") else 0.0,
         "has_header_target_text": 1.0 if target else 0.0,
         "has_resolved_header_target_text": 1.0 if resolved else 0.0,
+        "has_boxed_header_target_text": 1.0 if boxed else 0.0,
         "instruction_len": float(len(instruction)),
         "header_target_len": float(len(target)),
         "resolved_header_target_len": float(len(resolved)),
+        "boxed_header_target_len": float(len(boxed)),
         "instruction_cjk_count": float(len(cjk_text(instruction))),
         "header_target_cjk_count": float(len(cjk_text(target))),
         "resolved_header_target_cjk_count": float(len(cjk_text(resolved))),
@@ -193,7 +206,7 @@ def extract_features(result: dict[str, Any]) -> dict[str, float]:
 
 
 def build_dataset(
-    annotations: list[dict[str, Any]], runs_dir: Path
+    annotations: list[dict[str, Any]], runs_dirs: list[Path]
 ) -> tuple[list[str], list[dict[str, float]], list[str]]:
     images: list[str] = []
     rows: list[dict[str, float]] = []
@@ -201,7 +214,7 @@ def build_dataset(
     iterator = annotations
     for ann in iterator:
         image = str(ann["image"])
-        result = load_result(runs_dir, image)
+        result = load_result(runs_dirs, image)
         images.append(image)
         rows.append(extract_features(result))
         labels.append(label_for(ann))
@@ -407,7 +420,13 @@ def write_feature_csv(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--annotations", type=Path, default=DEFAULT_ANNOTATIONS)
-    parser.add_argument("--runs-dir", type=Path, default=DEFAULT_RUNS_DIR)
+    parser.add_argument(
+        "--runs-dir",
+        type=Path,
+        action="append",
+        default=None,
+        help="Directory containing per-image result.json folders. Can be repeated.",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--epochs", type=int, default=2500)
     parser.add_argument("--loo-epochs", type=int, default=1200)
@@ -420,7 +439,8 @@ def main() -> None:
     args = parser.parse_args()
 
     annotations = load_annotations(args.annotations)
-    images, feature_rows, labels = build_dataset(annotations, args.runs_dir)
+    runs_dirs = args.runs_dir or [DEFAULT_RUNS_DIR]
+    images, feature_rows, labels = build_dataset(annotations, runs_dirs)
     feature_names = feature_names_from(feature_rows)
     class_names = sorted(set(labels))
     label_to_idx = {label: idx for idx, label in enumerate(class_names)}

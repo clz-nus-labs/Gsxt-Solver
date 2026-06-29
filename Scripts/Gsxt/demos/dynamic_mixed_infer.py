@@ -163,6 +163,14 @@ def is_header_box(box: list[int] | list[float], height: int, header_ratio: float
     return center_y <= height * header_ratio
 
 
+def spatial_order_key(item: dict[str, Any]) -> tuple[float, float]:
+    center = item.get("center") or []
+    if len(center) >= 2:
+        return float(center[0]), float(center[1])
+    box = item.get("bbox") or [0, 0, 0, 0]
+    return (float(box[0]) + float(box[2])) / 2.0, (float(box[1]) + float(box[3])) / 2.0
+
+
 def xywh_to_xyxy(bbox: list[float]) -> list[float]:
     x, y, w, h = bbox
     return [x, y, x + w, y + h]
@@ -357,6 +365,193 @@ def restore_icon_candidates_for_header_mode(items: list[dict[str, Any]]) -> list
     for index, item in enumerate(restored, start=1):
         item["index"] = index
     return restored
+
+
+def has_cjk_text(text: str, min_len: int = 2) -> bool:
+    return sum(1 for char in str(text or "") if "\u4e00" <= char <= "\u9fff") >= min_len
+
+
+def infer_char_body_fallback_for_icon_rule(
+    *,
+    task_spec: TaskSpec,
+    raw_results: list[dict[str, Any]],
+    overlap_iou: float,
+    char_rec_threshold: float,
+) -> tuple[TaskSpec, list[dict[str, Any]], str, str] | None:
+    """Recover real Geetest character tasks that header-icon rules steal.
+
+    On real challenge-only Geetest crops, distorted Chinese title/body glyphs can
+    be classified as icons. If the rule-selected task is icon but the header OCR
+    and body OCR both expose clear CJK evidence, prefer the char detections. This
+    is deliberately asymmetric: it never turns a char task into icon.
+    """
+    if task_spec.modality != "icon" or task_spec.action != "explicit_order":
+        return None
+    evidence = task_spec.evidence or {}
+    header_text = str(
+        evidence.get("resolved_header_target_text")
+        or evidence.get("header_target_text")
+        or evidence.get("instruction_text")
+        or ""
+    )
+    if not has_cjk_text(header_text, min_len=2):
+        return None
+
+    char_merged = merge_overlapping_items(
+        [item for item in raw_results if item.get("kind") == "char"],
+        overlap_iou=overlap_iou,
+        char_rec_threshold=min(char_rec_threshold, 0.20),
+        prefer_kind="char",
+    )
+    char_candidates = [
+        item
+        for item in char_merged
+        if is_single_cjk(str(item.get("text", "")))
+        and float(item.get("rec_score", 0.0)) >= 0.35
+        and float(item.get("det_score", 0.0)) >= 0.20
+    ]
+    if len(char_candidates) < 3:
+        return None
+
+    # Confidence selects which glyphs are reliable. If the header already gave
+    # a CJK target order, use that order to match body glyphs; do not let body
+    # layout or detection confidence rewrite the prompt order.
+    selected_by_score = sorted(
+        char_candidates,
+        key=lambda row: (
+            float(row.get("rec_score", 0.0)),
+            float(row.get("det_score", 0.0)),
+            float(row.get("final_score", 0.0)),
+        ),
+        reverse=True,
+    )[:3]
+    header_chars = [char for char in header_text if "\u4e00" <= char <= "\u9fff"][:3]
+    if len(header_chars) == 3:
+        selected = order_items_by_target(
+            selected_by_score,
+            ",".join(header_chars),
+            normalize_aliases=False,
+            keep_unmatched=False,
+        )
+        if len(selected) < 3:
+            selected = selected_by_score
+        target_chars_for_order = header_chars
+    else:
+        selected = sorted(selected_by_score, key=spatial_order_key)
+        target_chars_for_order = [str(item.get("text") or "") for item in selected]
+    for index, item in enumerate(selected, start=1):
+        item["index"] = index
+        item["merge_reason"] = item.get("merge_reason") or "char_body_fallback_for_icon_rule"
+
+    target_order = ",".join(target_chars_for_order)
+    new_evidence = dict(evidence)
+    new_evidence["char_body_fallback_for_icon_rule"] = {
+        "previous_target_source": task_spec.target_source,
+        "header_text": header_text,
+        "candidate_count": len(char_candidates),
+    }
+    new_spec = TaskSpec(
+        action="explicit_order",
+        modality="char",
+        target_source="char_body_fallback_for_icon_rule",
+        target_order=target_order,
+        confidence=max(float(task_spec.confidence or 0.0), 0.55),
+        evidence=new_evidence,
+    )
+    return new_spec, selected, target_order, new_spec.target_source
+
+
+def reinterpret_icon_results_as_char_if_cjk_evidence(
+    *,
+    task_spec: TaskSpec,
+    final_results: list[dict[str, Any]],
+    target_source_resolved: str,
+) -> tuple[TaskSpec, list[dict[str, Any]], str, str] | None:
+    """Keep click points but report char mode when icon labels are likely bogus.
+
+    Some real Geetest character tasks have one body glyph detected only as icon.
+    If the header OCR sees a multi-character CJK target and at least two selected
+    body points have strong CJK OCR evidence, the safest correction is to keep the
+    selected points/order but expose them as a character task instead of arbitrary
+    icon labels such as "cross".
+    """
+    if task_spec.modality != "icon" or task_spec.action != "explicit_order":
+        return None
+    evidence = task_spec.evidence or {}
+    header_text = "".join(
+        char
+        for char in str(
+            evidence.get("resolved_header_target_text")
+            or evidence.get("header_target_text")
+            or ""
+        )
+        if "\u4e00" <= char <= "\u9fff"
+    )
+    header_text_score = float(evidence.get("header_target_text_score") or 0.0)
+    header_text_reliable = header_text_score >= 0.85
+    icon_header_without_body_support = target_source_resolved == "header_icons_ignored_no_body_icons"
+    if len(final_results) < 3:
+        return None
+    if len(header_text) < 2 and not icon_header_without_body_support:
+        return None
+
+    strong_cjk_points = 0
+    converted: list[dict[str, Any]] = []
+    for index, item in enumerate(final_results, start=1):
+        candidate_scores = item.get("candidate_scores") or {}
+        best_char = ""
+        best_score = 0.0
+        for char, score in candidate_scores.items():
+            if "\u4e00" <= str(char) <= "\u9fff" and float(score) > best_score:
+                best_char = str(char)
+                best_score = float(score)
+        if not best_char:
+            for source_key in ("restored_from_char", "promoted_from_char"):
+                source = item.get(source_key) or {}
+                source_text = str(source.get("text") or "")
+                if is_single_cjk(source_text):
+                    best_char = source_text
+                    best_score = max(best_score, float(source.get("rec_score") or 0.0))
+                    break
+        if header_text_reliable and index <= len(header_text):
+            best_char = header_text[index - 1]
+        if best_score >= 0.70 or item.get("detected_kind") == "char":
+            strong_cjk_points += 1
+        row = dict(item)
+        row["kind"] = "char"
+        row["text"] = best_char or "unknown_char"
+        row["rec_score"] = best_score
+        row["final_score"] = float(row.get("det_score", 0.0)) * max(best_score, 0.5)
+        row["merge_reason"] = "reinterpret_icon_as_char_with_cjk_evidence"
+        row.pop("label", None)
+        row.pop("cls_score", None)
+        row["index"] = index
+        converted.append(row)
+
+    required_cjk_points = 3 if icon_header_without_body_support else 2
+    if strong_cjk_points < required_cjk_points:
+        return None
+
+    converted_ordered = converted
+    target_order = ",".join(str(item.get("text") or "") for item in converted_ordered)
+    new_evidence = dict(evidence)
+    new_evidence["reinterpret_icon_as_char_with_cjk_evidence"] = {
+        "previous_target_source": target_source_resolved,
+        "header_text": header_text,
+        "header_text_score": header_text_score,
+        "header_text_reliable": header_text_reliable,
+        "strong_cjk_points": strong_cjk_points,
+        "icon_header_without_body_support": icon_header_without_body_support,
+    }
+    new_spec = TaskSpec(
+        action="semantic_order" if icon_header_without_body_support and not header_text else "explicit_order",
+        modality="char",
+        target_source="reinterpret_icon_as_char_with_cjk_evidence",
+        target_order=target_order,
+        confidence=max(float(task_spec.confidence or 0.0), 0.55),
+        evidence=new_evidence,
+    )
+    return new_spec, converted_ordered, target_order, new_spec.target_source
 
 
 def promote_char_candidates_for_header_mode(
@@ -792,7 +987,13 @@ def infer_semantic_target_order(
     best_mean_score = float(np.exp(best_visual_log))
     second_joint = ranked[1][0] if len(ranked) > 1 else float("-inf")
     margin = best_joint - second_joint
-    if best_mean_score >= 0.001 and best_min_score >= 1e-7 and margin >= 0.06:
+    # Distorted body glyphs often put the correct character far below top-1,
+    # while the three-character phrase itself is common and visually plausible
+    # as a whole (for example "台北市").  A hard 1e-7 per-character floor was
+    # too aggressive and forced semantic tasks back to spatial/OCR order.  Keep
+    # the joint visual mean and margin checks as the real guardrails, but allow
+    # one weak glyph candidate to survive.
+    if best_mean_score >= 0.001 and best_min_score >= 1e-9 and margin >= 0.06:
         return (
             best_phrase,
             f"semantic-joint:{best_phrase}:visual={best_mean_score:.3f}:"
@@ -1308,6 +1509,30 @@ def detect_header_icon_boxes(
     return merged
 
 
+def has_separate_header_target_group(
+    image_rgb: Image.Image,
+    header_ratio: float,
+    first_target_left: int,
+    min_gap_ratio: float = 0.045,
+) -> bool:
+    """Reject centered instruction text mistaken as right-side prompt targets."""
+    arr = np.asarray(image_rgb.convert("RGB"))
+    height, width = arr.shape[:2]
+    y2 = max(1, int(height * header_ratio))
+    first_target_left = int(np.clip(first_target_left, 0, width))
+    if first_target_left <= 0:
+        return True
+    if first_target_left >= int(width * 0.70):
+        return True
+    header = arr[:y2, :first_target_left]
+    mask = header_foreground_mask(header)
+    _ys, xs = np.where(mask > 0)
+    if not len(xs):
+        return True
+    gap = first_target_left - int(xs.max())
+    return gap >= max(24, int(width * min_gap_ratio))
+
+
 def classify_header_icons(
     image_rgb: Image.Image,
     icon_model,
@@ -1399,6 +1624,13 @@ def classify_header_icons(
             partitioned.append([left, box[1], max(left + 1, right), box[3]])
         merged_boxes = partitioned
 
+    if merged_boxes and not has_separate_header_target_group(
+        image_rgb,
+        header_ratio,
+        min(box[0] for box in merged_boxes),
+    ):
+        return []
+
     target_items: list[dict[str, Any]] = []
     for box in merged_boxes:
         x1, y1, x2, y2 = box
@@ -1439,7 +1671,7 @@ def classify_header_icons(
                 "center": [int((x1 + x2) / 2), int((y1 + y2) / 2)],
             }
         )
-    return target_items
+    return sorted(target_items, key=spatial_order_key)
 
 
 def icon_shape_mask(image_rgb: Image.Image, box: list[int], header: bool, size: int = 64) -> np.ndarray:
@@ -1586,7 +1818,7 @@ def order_items_by_header_shape(
     if len(header_items) < 2 or not icon_items:
         return items, header_items
 
-    sorted_headers = sorted(header_items, key=lambda row: row["center"][0])
+    sorted_headers = sorted(header_items, key=spatial_order_key)
     candidates = icon_items[:]
     using_fallback_candidates = False
     if not candidates:
@@ -1834,6 +2066,70 @@ def recognize_header_target_text(
     return best_text, best_score
 
 
+def recognize_header_target_text_by_boxes(
+    bgr: np.ndarray,
+    image_rgb: Image.Image,
+    rec_model,
+    rec_post,
+    header_ratio: float,
+    right_start_ratio: float,
+    max_targets: int,
+) -> tuple[str, float, list[dict[str, Any]]]:
+    """OCR header targets one visual box at a time, preserving x-order.
+
+    Full-line OCR is useful for content, but for "given order" prompts the
+    order is visual: left-to-right target boxes in the prompt header.  Per-box
+    OCR keeps that order independent from recognition confidence.
+    """
+    boxes = detect_header_icon_boxes(
+        image_rgb,
+        header_ratio=header_ratio,
+        right_start_ratio=max(0.40, right_start_ratio - 0.06),
+    )
+    if not boxes:
+        return "", 0.0, []
+    if not has_separate_header_target_group(
+        image_rgb,
+        header_ratio,
+        min(box[0] for box in boxes),
+    ):
+        return "", 0.0, []
+    height, width = bgr.shape[:2]
+    y_limit = max(1, int(height * header_ratio))
+    rows: list[dict[str, Any]] = []
+    for box in sorted(boxes, key=lambda row: row[0])[:max_targets]:
+        x1, y1, x2, y2 = clamp_box(box, width, height)
+        if y1 >= y_limit:
+            continue
+        y2 = min(y2, y_limit)
+        if x2 <= x1 or y2 <= y1:
+            continue
+        pad_x = max(2, int((x2 - x1) * 0.12))
+        pad_y = max(2, int((y2 - y1) * 0.18))
+        cx1 = max(0, x1 - pad_x)
+        cy1 = max(0, y1 - pad_y)
+        cx2 = min(width, x2 + pad_x)
+        cy2 = min(y_limit, y2 + pad_y)
+        text, score = recognize_char(rec_model, rec_post, bgr[cy1:cy2, cx1:cx2])
+        cjk_text = "".join(char for char in text if "\u4e00" <= char <= "\u9fff")
+        if not cjk_text:
+            continue
+        rows.append(
+            {
+                "text": cjk_text[0],
+                "raw_text": text,
+                "score": float(score),
+                "bbox": [cx1, cy1, cx2, cy2],
+                "center": [int((cx1 + cx2) / 2), int((cy1 + cy2) / 2)],
+            }
+        )
+    if not rows:
+        return "", 0.0, []
+    text = "".join(str(row["text"]) for row in rows)
+    score = float(np.mean([float(row["score"]) for row in rows]))
+    return text, score, rows
+
+
 def parse_header_text_targets(text: str) -> list[str]:
     cleaned = re.sub(r"\s+", "", text or "")
     if not cleaned:
@@ -1864,48 +2160,19 @@ def is_semantic_order_instruction(
     *,
     has_prompt_targets: bool = False,
 ) -> bool:
-    """Return True for instruction-only headers such as 请按语序依次点击."""
+    """Return True only for explicit semantic-order prompts.
+
+    "依次" and "顺序" are also used by ordinary given-order prompts, so they
+    must not trigger semantic reordering.  The reliable semantic signal is
+    "语序" (or the equivalent "词序").
+    """
     cleaned = re.sub(r"[\s，,。.;；:：、]+", "", text or "")
     if not cleaned:
         return False
 
-    order_markers = ("语序", "词序", "顺序")
-    action_markers = ("依次点击", "依次选择", "点击", "选择")
-    if any(marker in cleaned for marker in order_markers) and any(
-        marker in cleaned for marker in action_markers
-    ):
-        return score >= 0.35
-
-    # Tolerate a one-character OCR miss in the fixed prompt.
-    compact_markers = ("按语序依次", "按顺序依次", "语序依次点", "顺序依次点")
-    if any(marker in cleaned for marker in compact_markers):
-        return score >= 0.35
-
-    # When there are no prompt targets on the right, the header is usually one
-    # of a few fixed instruction-only strings. The OCR model often maps the
-    # small "语序依次" glyphs to visually similar fragments such as "语性",
-    # "性决", or "房作久". Keep this fuzzy branch disabled for prompt-target
-    # headers so explicit-order character/icon tasks are not stolen by the
-    # semantic-order path.
-    if has_prompt_targets:
-        return False
-    if score < 0.34:
-        return False
-
-    semantic_score = 0.0
-    if "语" in cleaned:
-        semantic_score += 0.45
-    if "序" in cleaned:
-        semantic_score += 0.25
-    if any(char in cleaned for char in ("性", "房")):
-        semantic_score += 0.20
-    if any(char in cleaned for char in ("决", "久", "人", "作", "依", "次")):
-        semantic_score += 0.18
-    if any(marker in cleaned for marker in ("点击", "点", "击")):
-        semantic_score += 0.16
-    if any(char in cleaned for char in ("请", "按")):
-        semantic_score += 0.08
-    return semantic_score >= 0.44
+    has_semantic_marker = "语序" in cleaned or "词序" in cleaned
+    has_action_marker = "点击" in cleaned or "选择" in cleaned or "点选" in cleaned
+    return bool(has_semantic_marker and has_action_marker and score >= 0.35)
 
 
 def has_prompt_header(
@@ -2267,6 +2534,9 @@ def resolve_task_spec(
 
     target_text = ""
     target_text_score = 0.0
+    boxed_target_text = ""
+    boxed_target_text_score = 0.0
+    boxed_target_items: list[dict[str, Any]] = []
     char_body_score = 0.0
     resolved_target_text = ""
     body_phrase_reason = ""
@@ -2278,6 +2548,26 @@ def resolve_task_spec(
             args.header_ratio,
             args.header_text_right_start,
         )
+        boxed_target_text, boxed_target_text_score, boxed_target_items = recognize_header_target_text_by_boxes(
+            bgr,
+            rgb_image,
+            rec_model,
+            rec_post,
+            args.header_ratio,
+            args.header_text_right_start,
+            args.max_header_text_targets,
+        )
+        if (
+            2 <= len(boxed_target_text) <= args.max_header_text_targets
+            and boxed_target_text_score >= 0.45
+            and (
+                not target_text
+                or target_text_score < 0.85
+                or len(boxed_target_text) >= len(target_text)
+            )
+        ):
+            target_text = boxed_target_text
+            target_text_score = max(target_text_score, boxed_target_text_score)
         if 2 <= len(target_text) <= args.max_header_text_targets:
             char_body_score, resolved_target_text, body_phrase_reason = analyze_explicit_char_hypothesis(
                 target_text,
@@ -2320,6 +2610,9 @@ def resolve_task_spec(
         "header_target_text": target_text,
         "resolved_header_target_text": resolved_target_text,
         "header_target_text_score": target_text_score,
+        "boxed_header_target_text": boxed_target_text,
+        "boxed_header_target_text_score": boxed_target_text_score,
+        "boxed_header_target_items": boxed_target_items,
         "char_body_compatibility": char_body_score,
         "body_phrase_reason": body_phrase_reason,
         "header_icon_count": len(target_items),
@@ -2530,7 +2823,21 @@ def predict_header_intent_shadow(
         predicted_task_type != rule_task_type
         or predicted_order_mode != rule_order_mode
     )
-    override_recommended = confidence >= threshold and margin >= min_margin and disagrees
+    # The rule path tends to over-trust header icon classification on real
+    # Geetest crops: distorted black Chinese title glyphs can look like icons,
+    # while the header OCR may fail. In that specific conflict direction, let a
+    # moderately confident learned "char" intent veto the icon rule. Keep the
+    # original stricter threshold for icon-over-char and same-modality changes.
+    effective_threshold = threshold
+    effective_margin = min_margin
+    if rule_task_type == "icon" and predicted_task_type == "char":
+        effective_threshold = min(effective_threshold, 0.55)
+        effective_margin = min(effective_margin, 0.10)
+    override_recommended = (
+        confidence >= effective_threshold
+        and margin >= effective_margin
+        and disagrees
+    )
 
     return {
         "enabled": True,
@@ -2546,6 +2853,8 @@ def predict_header_intent_shadow(
         "disagrees_with_rule": disagrees,
         "override_threshold": threshold,
         "override_margin": min_margin,
+        "effective_override_threshold": effective_threshold,
+        "effective_override_margin": effective_margin,
         "override_recommended": override_recommended,
     }
 
@@ -2846,6 +3155,45 @@ def main() -> None:
         char_rec_threshold=args.char_rec_threshold,
         prefer_kind=prefer_kind,
     )
+    if (
+        task_spec.target_source == "none"
+        and task_spec.modality == "mixed"
+        and is_semantic_order_instruction(
+            str((task_spec.evidence or {}).get("instruction_text") or ""),
+            float((task_spec.evidence or {}).get("instruction_score") or 0.0),
+            has_prompt_targets=False,
+        )
+    ):
+        char_only_results = [
+            item
+            for item in merged_results
+            if item.get("kind") == "char" and is_single_cjk(str(item.get("text", "")))
+        ]
+        if len(char_only_results) == 3 and not target_items:
+            semantic_order, semantic_reason = infer_semantic_target_order(
+                char_only_results,
+                Path(args.semantic_phrases),
+                extra_phrase_paths=[Path(path) for path in args.semantic_extra],
+                use_jieba=not args.no_jieba_semantic,
+            )
+            if semantic_order and semantic_reason.startswith("semantic-joint:"):
+                task_spec = TaskSpec(
+                    action="semantic_order",
+                    modality="char",
+                    target_source="semantic_fallback_no_header_targets",
+                    target_order=semantic_order,
+                    confidence=max(float(task_spec.confidence or 0.0), 0.50),
+                    evidence={
+                        **(task_spec.evidence or {}),
+                        "semantic_fallback_no_header_targets": semantic_reason,
+                    },
+                )
+                merged_results = char_only_results
+                resolved_target_order = semantic_order
+                target_source_resolved = task_spec.target_source
+                char_task = True
+                text_target_task = False
+                semantic_instruction_task = True
     if task_spec.modality == "icon" and not any(item["kind"] == "icon" for item in merged_results):
         resolved_target_order = ""
         target_source_resolved = "header_icons_ignored_no_body_icons"
@@ -2861,6 +3209,18 @@ def main() -> None:
             resolved_target_order = semantic_order
             target_source_resolved = semantic_reason
             task_spec.target_order = semantic_order
+    char_body_fallback = infer_char_body_fallback_for_icon_rule(
+        task_spec=task_spec,
+        raw_results=results,
+        overlap_iou=args.overlap_iou,
+        char_rec_threshold=args.char_rec_threshold,
+    )
+    if char_body_fallback is not None:
+        task_spec, merged_results, resolved_target_order, target_source_resolved = char_body_fallback
+        target_items = []
+        char_task = True
+        text_target_task = True
+        semantic_instruction_task = False
     if task_spec.modality == "icon":
         header_mode_results = restore_icon_candidates_for_header_mode(merged_results)
         header_mode_results = promote_char_candidates_for_header_mode(
@@ -2878,6 +3238,17 @@ def main() -> None:
         matched_order = [item.get("matched_label", "") for item in target_items if item.get("matched_label")]
         if matched_order:
             resolved_target_order = ",".join(matched_order)
+        reinterpreted_char = reinterpret_icon_results_as_char_if_cjk_evidence(
+            task_spec=task_spec,
+            final_results=final_results,
+            target_source_resolved=target_source_resolved,
+        )
+        if reinterpreted_char is not None:
+            task_spec, final_results, resolved_target_order, target_source_resolved = reinterpreted_char
+            target_items = []
+            char_task = True
+            text_target_task = True
+            semantic_instruction_task = False
     else:
         final_results = order_items_by_target(
             merged_results,
@@ -2885,6 +3256,25 @@ def main() -> None:
             normalize_aliases=not char_task,
             keep_unmatched=not char_task,
         )
+
+    if task_spec.action == "semantic_order" and task_spec.modality == "char":
+        semantic_order, semantic_reason = infer_semantic_target_order(
+            final_results,
+            Path(args.semantic_phrases),
+            extra_phrase_paths=[Path(path) for path in args.semantic_extra],
+            use_jieba=not args.no_jieba_semantic,
+        )
+        if semantic_order and semantic_order != resolved_target_order.replace(",", ""):
+            resolved_target_order = semantic_order
+            target_source_resolved = semantic_reason
+            task_spec.target_order = semantic_order
+            task_spec.target_source = semantic_reason
+            final_results = order_items_by_target(
+                final_results,
+                resolved_target_order,
+                normalize_aliases=False,
+                keep_unmatched=False,
+            )
 
     if semantic_instruction_task and len(final_results) > 3:
         final_results = final_results[:3]
@@ -2940,6 +3330,24 @@ def main() -> None:
             )
             if override_results:
                 final_results = override_results
+                if task_spec.action == "semantic_order" and task_spec.modality == "char":
+                    semantic_order, semantic_reason = infer_semantic_target_order(
+                        final_results,
+                        Path(args.semantic_phrases),
+                        extra_phrase_paths=[Path(path) for path in args.semantic_extra],
+                        use_jieba=not args.no_jieba_semantic,
+                    )
+                    if semantic_order and semantic_order != resolved_target_order.replace(",", ""):
+                        resolved_target_order = semantic_order
+                        target_source_resolved = semantic_reason
+                        task_spec.target_order = semantic_order
+                        task_spec.target_source = semantic_reason
+                        final_results = order_items_by_target(
+                            final_results,
+                            resolved_target_order,
+                            normalize_aliases=False,
+                            keep_unmatched=False,
+                        )
                 task_type = task_spec.modality
                 payload["task_type"] = task_type
                 payload["task_spec"] = asdict(task_spec)

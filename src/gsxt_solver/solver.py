@@ -48,8 +48,15 @@ class Solver:
 
     @staticmethod
     def _default_header_intent_model() -> Path | None:
-        path = Path(__file__).resolve().parent / "assets" / "header_intent_model_200.json"
-        return path if path.exists() else None
+        assets = Path(__file__).resolve().parent / "assets"
+        for name in (
+            "header_intent_model_200_plus_latest.json",
+            "header_intent_model_200.json",
+        ):
+            path = assets / name
+            if path.exists():
+                return path
+        return None
 
     @classmethod
     def from_project(

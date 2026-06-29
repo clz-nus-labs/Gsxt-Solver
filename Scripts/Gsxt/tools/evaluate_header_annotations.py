@@ -21,6 +21,7 @@ GSXT = ROOT / "Scripts" / "Gsxt"
 DEFAULT_ANNOTATION = GSXT / "data" / "annotations" / "gsxt_200_simple_annotation.json"
 DEFAULT_IMAGE_DIR = GSXT / "data" / "images"
 DEFAULT_OUTPUT_DIR = GSXT / "output" / "header_eval_200"
+DEFAULT_MODEL_ROOT = ROOT / "dist" / "models" / "gsxt-models-v0.1.0"
 
 
 def load_annotations(path: Path) -> list[dict[str, Any]]:
@@ -30,21 +31,34 @@ def load_annotations(path: Path) -> list[dict[str, Any]]:
 
 
 def model_args() -> list[str]:
+    det_weights = GSXT / "output" / "training" / "paddledet_external_mixed" / "best_model.pdparams"
+    det_dataset = GSXT / "data" / "datasets" / "external_mixed_paddledet"
+    rec_config = GSXT / "output" / "training" / "chinese_char_rec_ppocrv4_domain_finetune" / "config.yml"
+    rec_weights = GSXT / "output" / "training" / "chinese_char_rec_ppocrv4_domain_finetune" / "best_accuracy.pdparams"
+    icon_weights = GSXT / "output" / "training" / "icon_cls_geetest_plus_synthetic_mobilenet_v3_large" / "best_accuracy.pdparams"
+    icon_labels = GSXT / "output" / "training" / "icon_cls_geetest_plus_synthetic_mobilenet_v3_large" / "label_list.txt"
+    if (DEFAULT_MODEL_ROOT / "det" / "best_model.pdparams").exists():
+        det_weights = DEFAULT_MODEL_ROOT / "det" / "best_model.pdparams"
+        det_dataset = DEFAULT_MODEL_ROOT / "det" / "dataset"
+        rec_config = DEFAULT_MODEL_ROOT / "rec" / "config.yml"
+        rec_weights = DEFAULT_MODEL_ROOT / "rec" / "best_accuracy.pdparams"
+        icon_weights = DEFAULT_MODEL_ROOT / "icon" / "best_accuracy.pdparams"
+        icon_labels = DEFAULT_MODEL_ROOT / "icon" / "label_list.txt"
     return [
         "--det-config",
         str(GSXT / "third_party" / "PaddleDetection" / "configs" / "picodet" / "picodet_s_320_coco_lcnet.yml"),
         "--det-weights",
-        str(GSXT / "output" / "training" / "paddledet_external_mixed" / "best_model.pdparams"),
+        str(det_weights),
         "--det-dataset",
-        str(GSXT / "data" / "datasets" / "external_mixed_paddledet"),
+        str(det_dataset),
         "--rec-config",
-        str(GSXT / "output" / "training" / "chinese_char_rec_ppocrv4_domain_finetune" / "config.yml"),
+        str(rec_config),
         "--rec-weights",
-        str(GSXT / "output" / "training" / "chinese_char_rec_ppocrv4_domain_finetune" / "best_accuracy.pdparams"),
+        str(rec_weights),
         "--icon-weights",
-        str(GSXT / "output" / "training" / "icon_cls_geetest_plus_synthetic_mobilenet_v3_large" / "best_accuracy.pdparams"),
+        str(icon_weights),
         "--icon-labels",
-        str(GSXT / "output" / "training" / "icon_cls_geetest_plus_synthetic_mobilenet_v3_large" / "label_list.txt"),
+        str(icon_labels),
     ]
 
 

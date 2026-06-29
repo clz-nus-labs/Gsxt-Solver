@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import shutil
+import zipfile
 from collections import defaultdict
 from pathlib import Path
 
@@ -13,6 +15,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ICON_ROOT = PROJECT_ROOT / "Scripts" / "Gsxt" / "data" / "datasets" / "Geetest_Solver_v12i_coco"
 DEFAULT_OUTPUT = PROJECT_ROOT / "Scripts" / "Gsxt" / "data" / "datasets" / "geetest_icon_cls"
 DEFAULT_SYN_ICON = PROJECT_ROOT / "Scripts" / "Gsxt" / "data" / "datasets" / "synthetic_icon_cls"
+DEFAULT_EXTRACT_ROOT = PROJECT_ROOT / "Scripts" / "Gsxt" / "data" / "datasets" / "Geetest_Solver_v12i_coco"
 
 
 SPLIT_ALIASES = {
@@ -24,6 +27,17 @@ SPLIT_ALIASES = {
 
 def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def extract_zip(zip_path: Path, extract_root: Path) -> Path:
+    if not zip_path.exists():
+        raise FileNotFoundError(f"COCO zip not found: {zip_path}")
+    if extract_root.exists():
+        shutil.rmtree(extract_root)
+    extract_root.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(zip_path) as zf:
+        zf.extractall(extract_root)
+    return extract_root
 
 
 def find_split_dir(root: Path, split: str) -> Path | None:
@@ -71,6 +85,7 @@ def add_external_split(
     split: str,
     rows: list[str],
     labels: set[str],
+    allowed_labels: set[str] | None,
     pad_ratio: float,
 ) -> tuple[int, int]:
     split_dir = find_split_dir(root, split)
@@ -96,6 +111,9 @@ def add_external_split(
             skipped += 1
             continue
         label = categories.get(category_id, f"class_{category_id}")
+        if allowed_labels is not None and label not in allowed_labels:
+            skipped += 1
+            continue
         labels.add(label)
         label_dir = safe_label(label)
         counts[label] += 1
@@ -109,16 +127,29 @@ def add_external_split(
     return total, skipped
 
 
-def add_synthetic_rows(source: Path, split: str, rows: list[str], labels: set[str]) -> int:
+def add_synthetic_rows(
+    source: Path,
+    split: str,
+    rows: list[str],
+    labels: set[str],
+    allowed_labels: set[str] | None,
+    keep_ratio: float,
+    rng: random.Random,
+) -> int:
     list_name = "val.txt" if split == "val" else f"{split}.txt"
     list_path = source / list_name
     if not list_path.exists():
         return 0
     count = 0
-    for line in list_path.read_text(encoding="utf-8").splitlines():
+    source_lines = [line for line in list_path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if keep_ratio < 1.0:
+        source_lines = [line for line in source_lines if rng.random() < keep_ratio]
+    for line in source_lines:
         if not line.strip():
             continue
         image_path, label = line.split("\t", 1)
+        if allowed_labels is not None and label not in allowed_labels:
+            continue
         if Path(image_path).exists():
             labels.add(label)
             rows.append(f"{Path(image_path).resolve()}\t{label}")
@@ -128,29 +159,68 @@ def add_synthetic_rows(source: Path, split: str, rows: list[str], labels: set[st
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Crop COCO icon annotations into the custom icon classification format.")
+    parser.add_argument("--coco-zip", default="", help="Optional Roboflow COCO zip. If set, it is extracted before conversion.")
+    parser.add_argument("--extract-root", default=str(DEFAULT_EXTRACT_ROOT))
     parser.add_argument("--icon-root", default=str(DEFAULT_ICON_ROOT))
     parser.add_argument("--output", default=str(DEFAULT_OUTPUT))
     parser.add_argument("--include-synthetic", action="store_true")
     parser.add_argument("--synthetic-icon", default=str(DEFAULT_SYN_ICON))
+    parser.add_argument(
+        "--synthetic-keep-ratio",
+        type=float,
+        default=1.0,
+        help="Keep this fraction of synthetic rows when --include-synthetic is set. Use <1 for conservative fine-tuning.",
+    )
+    parser.add_argument("--seed", type=int, default=20260626)
+    parser.add_argument(
+        "--label-list",
+        default="",
+        help="Optional fixed label_list.txt. Use this when fine-tuning an existing classifier so class order stays stable.",
+    )
     parser.add_argument("--pad-ratio", type=float, default=0.15)
     args = parser.parse_args()
+
+    icon_root = Path(args.icon_root)
+    if args.coco_zip:
+        icon_root = extract_zip(Path(args.coco_zip), Path(args.extract_root))
+    if not 0.0 <= args.synthetic_keep_ratio <= 1.0:
+        raise ValueError("--synthetic-keep-ratio must be between 0 and 1")
+    rng = random.Random(args.seed)
 
     output = Path(args.output)
     if output.exists():
         shutil.rmtree(output)
     output.mkdir(parents=True, exist_ok=True)
 
-    labels: set[str] = set()
+    fixed_label_list: list[str] | None = None
+    allowed_labels: set[str] | None = None
+    if args.label_list:
+        fixed_label_list = [
+            line.strip()
+            for line in Path(args.label_list).read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        allowed_labels = set(fixed_label_list)
+
+    labels: set[str] = set(fixed_label_list or [])
     split_rows: dict[str, list[str]] = {"train": [], "val": [], "test": []}
 
     for split in ("train", "val", "test"):
-        total, skipped = add_external_split(Path(args.icon_root), output, split, split_rows[split], labels, args.pad_ratio)
+        total, skipped = add_external_split(icon_root, output, split, split_rows[split], labels, allowed_labels, args.pad_ratio)
         synthetic_count = 0
         if args.include_synthetic and split in ("train", "val"):
-            synthetic_count = add_synthetic_rows(Path(args.synthetic_icon), split, split_rows[split], labels)
+            synthetic_count = add_synthetic_rows(
+                Path(args.synthetic_icon),
+                split,
+                split_rows[split],
+                labels,
+                allowed_labels,
+                args.synthetic_keep_ratio,
+                rng,
+            )
         print(f"{split}: external={total} skipped={skipped} synthetic={synthetic_count}")
 
-    label_list = sorted(labels)
+    label_list = fixed_label_list or sorted(labels)
     (output / "label_list.txt").write_text("\n".join(label_list) + "\n", encoding="utf-8")
     for split, rows in split_rows.items():
         if rows:
