@@ -160,7 +160,7 @@ python Scripts\GJQYXYGS\desktop_edge_download.py
 先启动本地验证码服务：
 
 ```powershell
-& C:\Users\31912\.conda\envs\paddlex_cv\python.exe .\Scripts\GJQYXYGS\server.py
+python .\Scripts\GJQYXYGS\server.py
 ```
 
 默认读取仓库内的模型目录：
