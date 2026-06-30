@@ -9,11 +9,25 @@
   const MAX_LOG_ROWS = 2000;
   const CAPTCHA_RETRY_COOLDOWN_MS = 8 * 1000;
   const CAPTCHA_DEBUG_STEP_DELAY_MS = 1000;
+  const CAPTCHA_EXPECTED_POINTS = 3;
+  const MAX_CAPTCHA_IMAGE_REFRESHES = 5;
+  const MAX_PAGE_RECOVERY_REFRESHES = 3;
+  const PAGE_RECOVERY_REFRESH_MS = 3000;
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   let busy = false;
   let running = false;
   let submittedKeyword = "";
+  let runGeneration = 0;
+  const scheduledTimers = new Set();
+
+  class CaptchaRefreshRequested extends Error {
+    constructor(message, details = {}) {
+      super(message);
+      this.name = "CaptchaRefreshRequested";
+      this.details = details;
+    }
+  }
 
   function makeRunId(prefix = "run") {
     const stamp = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
@@ -49,6 +63,28 @@
       window.name = Object.keys(parsed).length ? JSON.stringify(parsed) : "";
     } catch {
       window.name = "";
+    }
+  }
+
+  function clearScheduledTimers() {
+    for (const timer of scheduledTimers) {
+      clearTimeout(timer);
+    }
+    scheduledTimers.clear();
+  }
+
+  function currentRunToken() {
+    return runGeneration;
+  }
+
+  function isRunTokenActive(token) {
+    return running && token === runGeneration && autoStateIsValid();
+  }
+
+  function assertRunNotStopped(token) {
+    if (token == null) return;
+    if (!running || token !== runGeneration) {
+      throw new Error("自动流程已停止");
     }
   }
 
@@ -301,6 +337,8 @@
         waitStartedAt: state.waitStartedAt || 0
       });
     } else {
+      runGeneration += 1;
+      clearScheduledTimers();
       clearTabState();
     }
   }
@@ -778,6 +816,56 @@
     };
   }
 
+  function findCaptchaRefreshButton(root) {
+    const scope = root || document;
+    const selectors = [
+      "[class*='refresh']",
+      "[class*='reload']",
+      "[class*='change']",
+      "[class*='switch']",
+      "[aria-label*='刷新']",
+      "[aria-label*='换']",
+      "[title*='刷新']",
+      "[title*='换']"
+    ];
+    for (const selector of selectors) {
+      const hit = Array.from(scope.querySelectorAll(selector))
+        .find((el) => !isInPanel(el) && isVisible(el));
+      if (hit) return hit;
+    }
+    const nodes = Array.from(scope.querySelectorAll("button, div, span, a, i, svg"))
+      .filter((el) => !isInPanel(el) && isVisible(el));
+    return nodes.find((el) => /refresh|reload|change|switch|换|刷新/i.test(
+      `${el.id || ""} ${String(el.className || "")} ${textOf(el)} ${el.getAttribute?.("aria-label") || ""} ${el.getAttribute?.("title") || ""}`
+    )) || null;
+  }
+
+  async function clickCaptchaRefresh(root, reason = "solver_result_not_three") {
+    const refreshButton = findCaptchaRefreshButton(root);
+    if (refreshButton) {
+      clickElement(refreshButton, false);
+      return {
+        method: "selector_or_text",
+        target: describeElement(refreshButton),
+        text: textOf(refreshButton) || String(refreshButton.value || ""),
+        reason
+      };
+    }
+
+    if (!root) return null;
+    const rect = root.getBoundingClientRect();
+    const x = rect.left + rect.width * 0.20;
+    const y = rect.top + rect.height * 0.90;
+    const targetDesc = clickViewportPoint(x, y);
+    return {
+      method: "geometry_left_bottom_second",
+      target: targetDesc,
+      text: "",
+      reason,
+      viewportPoint: { x: Math.round(x), y: Math.round(y) }
+    };
+  }
+
   async function postClickReport(payload) {
     try {
       const response = await fetch("http://127.0.0.1:7755/click-report", {
@@ -793,10 +881,12 @@
     }
   }
 
-  async function solveCaptchaWithGsxt(captcha) {
+  async function solveCaptchaWithGsxt(captcha, runToken = null) {
+    assertRunNotStopped(runToken);
     const el = findCaptchaElement() || captcha.element;
     if (!el) throw new Error("captcha element not found before screenshot");
     const crop = await cropElementScreenshot(el);
+    assertRunNotStopped(runToken);
     const debugId = captchaDebugId();
     const captureResponse = await fetch("http://127.0.0.1:7755/debug-capture", {
       method: "POST",
@@ -818,6 +908,7 @@
       throw new Error(`截图已裁剪，但保存调试图失败：HTTP ${captureResponse.status} ${captureResult?.error || "no JSON body"}`);
     }
     await debugStatus(`截图保存成功：${captureResult.debug_image}\n正在调用模型识别...`);
+    assertRunNotStopped(runToken);
 
     const response = await fetch("http://127.0.0.1:7755/solve", {
       method: "POST",
@@ -837,7 +928,19 @@
       throw new Error(`${result.error || "GSXT solver failed"}${result.debug_image ? `\ndebug_image: ${result.debug_image}` : ""}`);
     }
     const points = Array.isArray(result.points) ? result.points : [];
-    if (!points.length) throw new Error(`GSXT solver returned no points${result.debug_image ? `\ndebug_image: ${result.debug_image}` : ""}`);
+    if (points.length !== CAPTCHA_EXPECTED_POINTS) {
+      throw new CaptchaRefreshRequested(
+        `GSXT solver returned ${points.length} points, expected ${CAPTCHA_EXPECTED_POINTS}${result.debug_image ? `\ndebug_image: ${result.debug_image}` : ""}`,
+        {
+          debug_id: result.debug_id,
+          debug_image: result.debug_image,
+          task: result.task,
+          sequence: result.sequence,
+          points,
+          crop_info: crop.cropInfo
+        }
+      );
+    }
 
     await debugStatus(
       `模型识别成功\n`
@@ -845,9 +948,11 @@
       + `顺序：${(result.sequence || []).join(" → ") || "-"}\n`
       + `图片点位：${points.map((p) => `(${p.x},${p.y})`).join(" → ")}`
     );
+    assertRunNotStopped(runToken);
 
     const clickResults = [];
     for (let i = 0; i < points.length; i += 1) {
+      assertRunNotStopped(runToken);
       const point = points[i];
       const cssPointX = Number(point.x) / Math.max(0.0001, crop.scaleX);
       const cssPointY = Number(point.y) / Math.max(0.0001, crop.scaleY);
@@ -887,6 +992,7 @@
       });
       await sleep(900);
     }
+    assertRunNotStopped(runToken);
     result.click_results = clickResults;
     await postClickReport({
       debug_id: result.debug_id,
@@ -895,6 +1001,7 @@
       click_results: clickResults,
       crop_info: crop.cropInfo
     });
+    assertRunNotStopped(runToken);
     const confirmRow = clickCaptchaConfirm(el);
     if (confirmRow) {
       result.confirm_click = { index: "confirm", label: "确定", ...confirmRow };
@@ -1052,6 +1159,7 @@
     const done = tasks.shift();
     appendLog("task_sent", classifyPage(), { doneTask: done || "", remaining: Math.max(tasks.length, 0) });
     setTasks(tasks);
+    writeTabState({ pageRecoveryRefreshes: 0, captchaImageRefreshes: 0 });
     if (!tasks.length) {
       setRunning(false);
     }
@@ -1066,6 +1174,7 @@
     if (busy) return;
     if (running && !autoStateIsValid()) return;
     busy = true;
+    const runToken = running ? currentRunToken() : null;
     try {
       const tasks = getTasks();
       const keyword = tasks[0];
@@ -1127,26 +1236,71 @@
           writeTabState({ captchaTriedId: gsxtCaptchaKey, captchaTriedAt: Date.now() });
           try {
             setStatus("正在截图并调用本地 GSXT Solver...");
-            const gsxtResult = await solveCaptchaWithGsxt({ ...captcha, element: gsxtElement });
+            const gsxtResult = await solveCaptchaWithGsxt({ ...captcha, element: gsxtElement }, runToken);
             appendLog("captcha_auto_solved", pageType, {
               mode: running ? "auto" : "manual",
               solver: "gsxt_solver",
               result: gsxtResult
             });
-            writeTabState({ captchaSolvedAt: Date.now(), captchaTriedId: "", captchaTriedAt: 0 });
+            writeTabState({ captchaSolvedAt: Date.now(), captchaTriedId: "", captchaTriedAt: 0, captchaImageRefreshes: 0, pageRecoveryRefreshes: 0 });
             setStatus(`验证码点击完成，等待页面响应...\n${(gsxtResult.sequence || []).join(" → ")}`);
             if (running) schedule(2500);
             return;
           } catch (err) {
             const gsxtError = err?.message || String(err);
+            if (runToken != null && (!running || runToken !== currentRunToken())) {
+              return;
+            }
             appendLog("captcha_auto_failed", pageType, {
               mode: running ? "auto" : "manual",
               solver: "gsxt_solver",
-              error: gsxtError
+              error: gsxtError,
+              details: err?.details || null
             });
             writeTabState({ captchaTriedId: "", captchaTriedAt: 0, captchaSolvedAt: 0 });
-            if (running) setRunning(false);
-            setStatus(`自动识别失败，已停止自动流程以避免页面卡住。\n请手动完成验证码，完成后再点击“开始”继续。\n原因：${gsxtError}`);
+            if (err instanceof CaptchaRefreshRequested) {
+              const stateAfterSolve = readTabState();
+              const refreshCount = Number(stateAfterSolve.captchaImageRefreshes || 0) + 1;
+              if (!running) {
+                setStatus(`自动识别结果不是 ${CAPTCHA_EXPECTED_POINTS} 个目标。\n原因：${gsxtError}`);
+                return;
+              }
+              if (refreshCount > MAX_CAPTCHA_IMAGE_REFRESHES) {
+                writeTabState({ captchaImageRefreshes: 0 });
+                schedulePageRecoveryRefresh(
+                  `验证码连续 ${MAX_CAPTCHA_IMAGE_REFRESHES} 次未识别出 ${CAPTCHA_EXPECTED_POINTS} 个目标，改为刷新页面恢复。`
+                );
+                return;
+              }
+              const refreshRow = await clickCaptchaRefresh(gsxtElement, "solver_result_not_three");
+              if (!refreshRow) {
+                writeTabState({ captchaImageRefreshes: 0 });
+                schedulePageRecoveryRefresh("未找到验证码更换图片按钮，改为刷新页面恢复。");
+                return;
+              }
+              writeTabState({ captchaImageRefreshes: refreshCount });
+              await postClickReport({
+                debug_id: err.details?.debug_id || "-",
+                stage: "captcha_image_refresh",
+                message: `solver returned ${err.details?.points?.length ?? 0} points, expected ${CAPTCHA_EXPECTED_POINTS}`,
+                refresh_click: refreshRow,
+                task: err.details?.task,
+                sequence: err.details?.sequence,
+                points: err.details?.points,
+                crop_info: err.details?.crop_info
+              });
+              setStatus(
+                `识别到 ${err.details?.points?.length ?? 0} 个目标，不是 ${CAPTCHA_EXPECTED_POINTS} 个，已点击更换图片。\n`
+                + `第 ${refreshCount}/${MAX_CAPTCHA_IMAGE_REFRESHES} 次刷新验证码，稍后重新识别。`
+              );
+              if (running) schedule(2500);
+              return;
+            }
+            if (running) {
+              schedulePageRecoveryRefresh(`自动识别异常，将刷新页面恢复。\n原因：${gsxtError}`);
+              return;
+            }
+            setStatus(`自动识别失败。\n原因：${gsxtError}`);
             return;
           }
 
@@ -1278,6 +1432,7 @@
       if (pageType === "send_dialog") {
         submittedKeyword = "";
         if (!markAutoAction("send_dialog:send")) return;
+        writeTabState({ pageRecoveryRefreshes: 0 });
         setStatus("当前页面：发送确认弹窗\n点击“发送”。");
         clickElement(findSendDialogButton());
         await finishCurrentTask();
@@ -1290,7 +1445,7 @@
         if (running && state.lastAction === "detail:send_report") {
           const waited = Date.now() - (state.lastActionAt || Date.now());
           if (waited > MAX_WAIT_MS) {
-            pauseForManual("已点击“发送报告”，但长时间未进入发送确认弹窗。可能正在等待验证码或页面拦截。");
+            schedulePageRecoveryRefresh("已点击“发送报告”，但长时间未进入发送确认弹窗，刷新页面恢复。");
             return;
           }
           setStatus("已点击“发送报告”。\n未检测到验证码，等待发送确认弹窗出现，不会重复点击。");
@@ -1300,6 +1455,7 @@
         const report = findSendReportMenu();
         if (report) {
           if (!markAutoAction("detail:send_report")) return;
+          writeTabState({ pageRecoveryRefreshes: 0 });
           setStatus("当前页面：详情页，菜单已展开\n点击“发送报告”。如有验证码，将尝试自动截图识别。");
           clickElement(report);
           schedule(1200);
@@ -1308,6 +1464,7 @@
         const more = findMoreButton();
         if (more) {
           if (!markAutoAction("detail:open_more")) return;
+          writeTabState({ pageRecoveryRefreshes: 0 });
           setStatus("当前页面：详情页\n展开“更多”菜单并点击“发送报告”。");
           const opened = await clickMoreButton();
           const reportAfterOpen = findSendReportMenu(true);
@@ -1315,17 +1472,26 @@
             clickElement(reportAfterOpen);
             schedule(1200);
           } else {
-            setStatus("当前页面：详情页\n已尝试展开“更多”，但没有识别到“发送报告”。");
+            if (running) {
+              schedulePageRecoveryRefresh("当前页面：详情页\n已尝试展开“更多”，但没有识别到“发送报告”。");
+            } else {
+              setStatus("当前页面：详情页\n已尝试展开“更多”，但没有识别到“发送报告”。");
+            }
           }
           return;
         }
-        setStatus("当前页面：详情页\n未找到“更多”或“发送报告”。");
+        if (running) {
+          schedulePageRecoveryRefresh("当前页面：详情页\n未找到“更多”或“发送报告”。");
+        } else {
+          setStatus("当前页面：详情页\n未找到“更多”或“发送报告”。");
+        }
         return;
       }
 
       if (pageType === "result") {
         submittedKeyword = "";
         if (!markAutoAction("result:first_result")) return;
+        writeTabState({ pageRecoveryRefreshes: 0 });
         setStatus("当前页面：搜索结果页\n点击第一条搜索结果。");
         const firstResult = findFirstSearchResult();
         if (!firstResult) throw new Error("未找到第一条搜索结果");
@@ -1350,7 +1516,7 @@
           const waitStartedAt = state.waitStartedAt || Date.now();
           writeTabState({ waitStartedAt });
           if (Date.now() - waitStartedAt > MAX_WAIT_MS) {
-            pauseForManual(`已提交查询：${keyword}\n等待结果超过 ${Math.round(MAX_WAIT_MS / 1000)} 秒。`);
+            schedulePageRecoveryRefresh(`已提交查询：${keyword}\n等待结果超过 ${Math.round(MAX_WAIT_MS / 1000)} 秒，刷新页面恢复。`);
             return;
           }
           setStatus(`当前页面：首页/搜索页\n已提交查询：${keyword}\n未检测到验证码，等待结果页。`);
@@ -1358,6 +1524,7 @@
           return;
         }
         if (!markAutoAction(`search:${keyword}`)) return;
+        writeTabState({ pageRecoveryRefreshes: 0 });
         setStatus(`当前页面：首页/搜索页\n查询：${keyword}`);
         const button = document.querySelector("#btn_query");
         setInputValue(input, keyword);
@@ -1371,13 +1538,23 @@
       }
 
       if (running) {
-        pauseForManual(`当前页面：未知\n请手动停在首页、结果页、详情页或发送弹窗。\n当前任务：${keyword || "无"}`);
+        appendLog("unknown_page_refresh", pageType, { url: location.href, keyword });
+        schedulePageRecoveryRefresh(`当前页面：未知\n当前任务：${keyword || "无"}`);
       } else {
         setStatus(`当前页面：未知\n请手动停在首页、结果页、详情页或发送弹窗。\n当前任务：${keyword || "无"}`);
       }
     } catch (err) {
       console.error("[GSXT assistant]", err);
-      setStatus(`出错：${err.message || err}`);
+      if (runToken != null && (!running || runToken !== currentRunToken())) {
+        return;
+      }
+      const message = err?.message || String(err);
+      appendLog("auto_error_refresh", classifyPage(), { message, url: location.href });
+      if (running) {
+        schedulePageRecoveryRefresh(`流程出错，将刷新页面恢复。\n原因：${message}`);
+      } else {
+        setStatus(`出错：${message}`);
+      }
     } finally {
       busy = false;
     }
@@ -1385,11 +1562,49 @@
 
   function schedule(delay) {
     if (!running || !autoStateIsValid()) return;
-    setTimeout(actOnce, delay);
+    const token = currentRunToken();
+    const timer = setTimeout(() => {
+      scheduledTimers.delete(timer);
+      if (!isRunTokenActive(token)) return;
+      actOnce();
+    }, delay);
+    scheduledTimers.add(timer);
+  }
+
+  function schedulePageRecoveryRefresh(message, delay = PAGE_RECOVERY_REFRESH_MS) {
+    if (!running || !autoStateIsValid()) return;
+    const state = readTabState();
+    const refreshCount = Number(state.pageRecoveryRefreshes || 0) + 1;
+    if (refreshCount > MAX_PAGE_RECOVERY_REFRESHES) {
+      appendLog("page_recovery_refresh_limit", classifyPage(), {
+        message,
+        refreshCount: refreshCount - 1,
+        maxRefreshes: MAX_PAGE_RECOVERY_REFRESHES,
+        url: location.href
+      });
+      setRunning(false);
+      setStatus(
+        `自动恢复刷新已达到上限：${MAX_PAGE_RECOVERY_REFRESHES} 次。\n`
+        + `${message}\n`
+        + `流程已安全停止，请手动检查页面后再点击“开始”。`
+      );
+      return;
+    }
+    writeTabState({ pageRecoveryRefreshes: refreshCount });
+    const token = currentRunToken();
+    setStatus(`${message}\n${Math.ceil(delay / 1000)} 秒后刷新页面重试（${refreshCount}/${MAX_PAGE_RECOVERY_REFRESHES}）。点击“停止”可取消。`);
+    const timer = setTimeout(() => {
+      scheduledTimers.delete(timer);
+      if (!isRunTokenActive(token)) return;
+      window.location.reload();
+    }, delay);
+    scheduledTimers.add(timer);
   }
 
   function startRun() {
     saveTasks();
+    clearScheduledTimers();
+    runGeneration += 1;
     running = true;
     submittedKeyword = "";
     const runId = makeRunId("run");
