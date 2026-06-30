@@ -2,74 +2,61 @@
 
 **Version 0.3.0**
 
-GSXT Solver is a PaddlePaddle-based structured image-ordering pipeline for
-Chinese-character and icon click tasks. Given one captcha-like image, it detects
-candidate targets, understands the prompt/header, and returns the three click
-points in the required order.
+GSXT Solver is a PaddlePaddle-based image ordering toolkit for structured
+click tasks. It takes one image, identifies the requested targets, and returns
+the click points in order.
 
-The project can be used in two ways:
+The project supports two workflows:
 
-1. a standalone Python package/CLI for solving a saved image;
-2. a local Chrome/Edge extension bridge that captures the visible challenge,
-   calls the Python solver service, and clicks the returned points.
+1. standalone Python API / CLI usage for saved images;
+2. a local Chrome/Edge extension bridge for browser pages that display
+   supported click-order challenges.
 
-> Authorized-use notice: this project is intended for research, regression
-> testing, and automation in environments where you have permission to operate.
-> Respect the rules and terms of any website or system you interact with.
+> Use this project only in environments where you have permission to automate
+> or test the workflow. Respect the rules and terms of the systems you use.
 
-## What is new in 0.3.0
+## Supported scope
 
-- Bundled a newer lightweight header-intent model trained on 200 annotated
-  fixtures plus recent real challenge captures.
-- Improved arbitration among:
-  - `char_given_order`
-  - `char_semantic_order`
-  - `icon_given_order`
-- Fixed semantic ordering for common Chinese phrases such as `台北市`.
-- Added a browser-extension bridge under `Scripts/GJQYXYGS`.
-- Kept standard API output compact: probabilities and debug internals are hidden
-  unless debug mode is requested.
+GSXT Solver is designed for images with:
 
-## Supported task scope
-
-GSXT Solver is designed for structured click-order images with:
-
-- a prompt/header area near the top;
+- a prompt or target header near the top;
 - three body targets;
 - Chinese-character targets or icon-like targets;
-- either a given-order instruction or a semantic-order instruction.
+- either:
+  - a given-order instruction, where the header target order is read from left
+    to right;
+  - a semantic-order instruction, where Chinese characters are ordered by word
+    or phrase semantics.
 
-It is not a general OCR, object-detection, or universal captcha framework. It
-works best on layouts similar to the bundled fixtures and the supported Geetest
-click challenge layout.
+It is not a general OCR system, general object detector, or universal captcha
+solver. It works best on layouts similar to the bundled fixtures and the
+supported Geetest-style click challenge layout.
 
-Example fixture:
+Example input:
 
 ![Example fixture](tests/fixtures/test10.png)
 
-High-level flow:
+## Features
 
-```text
-input image
-  -> detect candidate char/icon regions
-  -> recognize body characters and icons
-  -> parse prompt/header intent
-  -> optionally apply header-intent arbitration
-  -> order the three targets
-  -> return points
-```
+- Detects character and icon-like target regions.
+- Recognizes Chinese character targets.
+- Recognizes and matches icon-like prompt targets to body targets.
+- Distinguishes given-order tasks from semantic-order Chinese character tasks.
+- Returns a stable standard result with ordered points.
+- Provides a debug mode with full intermediate diagnostics.
+- Provides a local browser-extension bridge for Chrome/Edge.
 
 ## Repository layout
 
 ```text
 src/gsxt_solver/              Python package, CLI, model downloader, public API
-Scripts/Gsxt/                 Paddle inference backend, evaluation/training tools
+Scripts/Gsxt/                 Paddle inference backend and development tools
 Scripts/GJQYXYGS/             local browser-extension bridge and Flask service
 tests/fixtures/               small packaged image fixtures
 ```
 
 Generated outputs, logs, browser profiles, model weights, Paddle source clones,
-and local environments are intentionally not part of the repository.
+and local environments are not part of the repository.
 
 ## Requirements
 
@@ -79,11 +66,12 @@ and local environments are intentionally not part of the repository.
 - PaddlePaddle 3.2.x
 - Chrome or Edge, only for the extension workflow
 
-GPU inference requires a PaddlePaddle build compatible with your local
-CUDA/CUDNN runtime. CPU inference is slower but simpler and is a good first
-cross-machine check.
+CPU inference is the simplest cross-machine setup. GPU inference requires a
+PaddlePaddle build compatible with the local CUDA/CUDNN runtime.
 
-## Installation from GitHub
+## Installation
+
+Clone the repository:
 
 ```powershell
 git clone https://github.com/clz-nus-labs/Gsxt-Solver.git
@@ -104,7 +92,7 @@ python -m pip install paddlepaddle==3.2.0 `
   -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
 ```
 
-Install the package and inference dependencies:
+Install the package:
 
 ```powershell
 python -m pip install -e ".[inference]"
@@ -124,13 +112,13 @@ powershell -ExecutionPolicy Bypass `
   -DirectPython
 ```
 
-If the `gsxt_solver` environment is not currently activated, omit
-`-DirectPython`; the scripts will use `conda run -n gsxt_solver`.
+If the environment is not currently activated, omit `-DirectPython`; the setup
+scripts will use `conda run -n gsxt_solver`.
 
 ## Download model weights
 
-The repository does not store Paddle model weights. Download the release assets
-and assemble the runtime model directory with:
+Model weights are distributed as GitHub Release assets, not stored directly in
+the repository.
 
 ```powershell
 gsxt-models `
@@ -138,27 +126,19 @@ gsxt-models `
   --release-base-url https://github.com/clz-nus-labs/Gsxt-Solver/releases/download/models-v0.1.0
 ```
 
-Expected output directory:
+Expected directory:
 
 ```text
 dist/models/gsxt-models-v0.1.0/
   det/
-    best_model.pdparams
-    dataset/
   rec/
-    best_accuracy.pdparams
-    config.yml
   icon/
-    best_accuracy.pdparams
-    label_list.txt
 ```
 
-For public releases, no token is required. For a private release, set `GH_TOKEN`
-or `GITHUB_TOKEN` before running `gsxt-models`.
+For public release assets, no token is required. For private release assets,
+set `GH_TOKEN` or `GITHUB_TOKEN` before running `gsxt-models`.
 
 ## Standalone Python API
-
-Use `Solver.from_bundle()` after downloading the model bundle:
 
 ```python
 from gsxt_solver import Solver
@@ -173,39 +153,40 @@ result = solver.solve("tests/fixtures/test10.png", mode="standard")
 print(result)
 ```
 
-Standard mode returns a stable public schema and does not save files by default:
+Example standard result:
 
 ```json
 {
   "schema_version": "1.0",
   "success": true,
-  "image": "captcha.png",
+  "image": "test10.png",
   "task": {
-    "action": "semantic_order",
-    "type": "char"
+    "action": "explicit_order",
+    "type": "icon"
   },
   "result": {
     "count": 3,
-    "sequence": ["台", "北", "市"],
+    "sequence": ["flamingo", "grasshopper", "air horn"],
     "points": [
-      {"x": 306, "y": 334},
-      {"x": 315, "y": 154},
-      {"x": 131, "y": 322}
+      {"x": 285, "y": 303},
+      {"x": 239, "y": 212},
+      {"x": 363, "y": 156}
     ],
     "items": [
       {
         "index": 1,
-        "type": "char",
-        "value": "台",
-        "center": {"x": 306, "y": 334},
-        "bbox": {"left": 264, "top": 288, "right": 348, "bottom": 380}
+        "type": "icon",
+        "value": "flamingo",
+        "center": {"x": 285, "y": 303},
+        "bbox": {"left": 244, "top": 262, "right": 327, "bottom": 344}
       }
     ]
   }
 }
 ```
 
-Save standard-mode files only when needed:
+Standard mode returns only the public schema and does not save files by default.
+To save files:
 
 ```python
 result = solver.solve(
@@ -217,26 +198,13 @@ result = solver.solve(
 )
 ```
 
-Debug mode returns the full backend payload and saves `result.json` plus a
-visualization by default:
+Debug mode returns full diagnostics and saves debug files by default:
 
 ```python
 debug_result = solver.solve(
     "tests/fixtures/test10.png",
     mode="debug",
     output_dir="runs/example-debug",
-)
-```
-
-The bundled header-intent model is enabled by default. Disable it only for
-rule-only comparisons:
-
-```python
-solver = Solver.from_bundle(
-    project_root=".",
-    model_dir="dist/models/gsxt-models-v0.1.0",
-    use_gpu=False,
-    use_header_intent=False,
 )
 ```
 
@@ -263,36 +231,36 @@ gsxt-solve .\tests\fixtures\test10.png `
   --cpu
 ```
 
-Useful options:
+Common options:
 
 ```text
---cpu / no --cpu       CPU or GPU inference
---mode standard        compact public output
---mode debug           full diagnostic output
---target-order TEXT    manually provide a target order
---no-header-intent     disable header-intent arbitration
---save-result          save result.json in standard mode
---save-visual          save annotated image in standard mode
+--cpu                 Run on CPU.
+--mode standard       Return compact public output.
+--mode debug          Return full diagnostic output.
+--target-order TEXT   Provide a manual order.
+--save-result         Save result.json in standard mode.
+--save-visual         Save an annotated image in standard mode.
 ```
 
 ## Browser extension workflow
 
-The extension is a local companion for Chrome/Edge. It captures the currently
-visible click challenge, sends it to the local Python service, receives ordered
-points, clicks the points in the page, and then clicks confirm.
+The local browser workflow uses the extension plus a Python service:
 
 ```text
 Chrome/Edge page
-  -> unpacked extension captures challenge image
+  -> unpacked extension captures the challenge image
   -> POST http://127.0.0.1:7755/solve
-  -> local gsxt_solver service
-  -> ordered points
-  -> extension clicks points and confirm
+  -> local GSXT Solver service returns ordered points
+  -> extension clicks points and confirms
 ```
 
-### 1. Start the local service
+Install extension dependencies:
 
-From the repository root:
+```powershell
+python -m pip install -r .\Scripts\GJQYXYGS\requirements.txt
+```
+
+Start the local service from the repository root:
 
 ```powershell
 python .\Scripts\GJQYXYGS\server.py
@@ -306,66 +274,32 @@ Listening: http://127.0.0.1:7755
 Endpoint: POST /solve with image_base64
 ```
 
-### 2. Load the extension
+Load the extension:
 
-Open:
+1. open `chrome://extensions/` or `edge://extensions/`;
+2. enable Developer mode;
+3. click **Load unpacked**;
+4. select `Scripts/GJQYXYGS/edge_extension`;
+5. reload the target page.
 
-```text
-chrome://extensions/
-```
+Use the **GSXT assistant** panel added by the extension. If automatic solving
+fails, complete the challenge manually; the workflow can continue afterwards.
 
-or:
-
-```text
-edge://extensions/
-```
-
-Then:
-
-1. enable Developer mode;
-2. click **Load unpacked**;
-3. select `Scripts/GJQYXYGS/edge_extension`;
-4. reload the target page.
-
-### 3. Use it
-
-1. Keep `server.py` running.
-2. Open the target page in Chrome or Edge.
-3. Use the **GSXT assistant** panel inserted by the extension.
-4. When a click challenge appears, the extension captures the challenge-only
-   image and calls the local service.
-5. If the service returns exactly three valid points, the extension clicks them
-   and then clicks confirm.
-6. If recognition fails, finish the challenge manually; the workflow is designed
-   to continue afterwards.
-
-See the extension-specific guide:
+More extension-specific details are in:
 
 [Scripts/GJQYXYGS/README.md](Scripts/GJQYXYGS/README.md)
 
-## Testing on another machine
+## Test after installation
 
-After cloning, installing dependencies, and downloading the model bundle, run:
+Run one fixture through the CLI:
 
 ```powershell
-python -m pip install -e ".[inference]"
-
 gsxt-solve .\tests\fixtures\test10.png `
   --project-root . `
   --model-dir .\dist\models\gsxt-models-v0.1.0 `
   --mode standard `
   --cpu
 ```
-
-Then verify the browser service starts:
-
-```powershell
-python .\Scripts\GJQYXYGS\server.py
-```
-
-If both commands work, the Python API and extension service are wired correctly.
-
-## Evaluation fixtures
 
 Run the packaged fixture suite:
 
@@ -378,18 +312,22 @@ gsxt-test-suite `
   --cpu
 ```
 
-The fixture images are regression inputs, not a broad benchmark.
+Check the extension service:
+
+```powershell
+python .\Scripts\GJQYXYGS\server.py
+```
 
 ## Troubleshooting
 
 | Symptom | Check |
 | --- | --- |
 | `ModuleNotFoundError: paddle` | Install PaddlePaddle in the active environment. |
-| `PaddleDetection` or `PaddleOCR` missing | Run the two setup scripts under `Scripts/Gsxt/training`. |
+| `PaddleDetection` or `PaddleOCR` missing | Run the setup scripts under `Scripts/Gsxt/training`. |
 | model file not found | Run `gsxt-models` and check `dist/models/gsxt-models-v0.1.0`. |
 | extension cannot reach service | Confirm `python .\Scripts\GJQYXYGS\server.py` is running. |
-| extension behavior did not change after update | Reload the unpacked extension and restart `server.py`. |
-| GPU/CUDNN warning | Use CPU first or install a Paddle build compatible with your CUDA/CUDNN runtime. |
+| extension update did not take effect | Reload the unpacked extension and restart `server.py`. |
+| GPU runtime warning | Use CPU first or install a compatible Paddle/CUDA/CUDNN stack. |
 
 ## License
 

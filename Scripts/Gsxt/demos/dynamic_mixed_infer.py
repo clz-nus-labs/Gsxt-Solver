@@ -2396,21 +2396,15 @@ def analyze_explicit_char_hypothesis(
                 f"header-body-joint:{best_joint_text}",
             )
 
-    body_phrase, body_phrase_reason = infer_semantic_target_order(
-        body_items,
-        phrase_path,
-        extra_phrase_paths=extra_phrase_paths,
-        use_jieba=use_jieba,
-    )
+    body_phrase_reason = ""
     resolved_text = target_text
-    if body_phrase and len(body_phrase) == len(target_text):
-        edit_count = sum(left != right for left, right in zip(body_phrase, target_text))
-        if edit_count <= max(1, len(target_text) // 3):
-            resolved_text = body_phrase
 
     # Cross-correct one weak header character from a strongly matching body
     # assignment. This handles OCR confusions without requiring the whole
-    # phrase to exist as a dictionary entry.
+    # phrase to exist as a dictionary entry.  It deliberately keeps the header
+    # positions fixed: this function is used for "given order" prompts, so the
+    # target order is the left-to-right header order, never a dictionary/semantic
+    # reordering of the body characters.
     if resolved_text == target_text and len(target_chars) >= 3:
         best_assignment_score = float("-inf")
         best_assignment: tuple[int, ...] = ()
@@ -2559,12 +2553,7 @@ def resolve_task_spec(
         )
         if (
             2 <= len(boxed_target_text) <= args.max_header_text_targets
-            and boxed_target_text_score >= 0.45
-            and (
-                not target_text
-                or target_text_score < 0.85
-                or len(boxed_target_text) >= len(target_text)
-            )
+            and boxed_target_text_score >= 0.35
         ):
             target_text = boxed_target_text
             target_text_score = max(target_text_score, boxed_target_text_score)

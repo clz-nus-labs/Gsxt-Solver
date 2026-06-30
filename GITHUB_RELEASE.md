@@ -1,5 +1,9 @@
 # GitHub publication guide
 
+Current package release: `v0.3.0`
+
+Model asset release: `models-v0.1.0`
+
 ## 1. What belongs in Git
 
 Commit:
@@ -69,6 +73,17 @@ gsxt-models `
 ```
 
 ## 5. Package release
+
+Create or update the code release tag:
+
+```powershell
+git tag v0.3.0
+git push origin v0.3.0
+```
+
+Then create a GitHub Release named `GSXT Solver v0.3.0`. The code release does
+not need to include model weights; users download weights from `models-v0.1.0`
+with `gsxt-models`.
 
 ```powershell
 python -m pip install build
